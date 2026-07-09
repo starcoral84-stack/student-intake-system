@@ -1,0 +1,14 @@
+@import "tailwindcss";
+
+html, body {
+  overscroll-behavior: none;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  user-select: none;
+}
+
+/* Big, forgiving tap targets everywhere */
+button {
+  touch-action: manipulation;
+  min-height: 44px;
+}
