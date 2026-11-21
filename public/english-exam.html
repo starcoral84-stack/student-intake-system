@@ -1,0 +1,753 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>[hidden]{display:none!important}body{margin:0}img{max-width:100%}</style>
+<title>English Entrance Mock</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bitter:wght@500;600;700&family=Figtree:wght@400;500;600;700&family=Literata:opsz,wght@7..72,400;7..72,500&display=swap">
+<style>
+/* Layout: one exam section on screen at a time, sticky header with section stepper, Back / Next footer. Paper sheet on a cool desk. */
+:root {
+  --desk: #eef1f6;
+  --sheet: #ffffff;
+  --ink: #1a2440;
+  --muted: #5a6479;
+  --line: #d8dde7;
+  --soft: #f4f6fa;
+  --accent: #2b57c4;        /* blue biro */
+  --accent-ink: #ffffff;
+  --accent-soft: #e6edfb;
+  --pencil: #f3c24a;        /* hint highlighter */
+  --pencil-soft: #fdf4d8;
+  --pencil-ink: #6b4d00;
+  --mark: #c63a2f;          /* teacher's red pen */
+  --mark-soft: #fbe9e7;
+  --good: #1f8a52;
+  --good-soft: #e3f4ea;
+  --f-display: "Bitter", Georgia, "Times New Roman", serif;
+  --f-body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-read: "Literata", Georgia, serif;
+  --r: 10px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --desk: #0f131b; --sheet: #171c27; --ink: #e5e9f2; --muted: #9aa3b6; --line: #2b3243; --soft: #1d2330;
+    --accent: #7ea2ff; --accent-ink: #0f1420; --accent-soft: #1f2a45;
+    --pencil: #e2b54b; --pencil-soft: #2c2616; --pencil-ink: #f1d488;
+    --mark: #ff7d70; --mark-soft: #331d1d; --good: #4fd08a; --good-soft: #15291f;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --desk: #0f131b; --sheet: #171c27; --ink: #e5e9f2; --muted: #9aa3b6; --line: #2b3243; --soft: #1d2330;
+  --accent: #7ea2ff; --accent-ink: #0f1420; --accent-soft: #1f2a45;
+  --pencil: #e2b54b; --pencil-soft: #2c2616; --pencil-ink: #f1d488;
+  --mark: #ff7d70; --mark-soft: #331d1d; --good: #4fd08a; --good-soft: #15291f;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body { background: var(--desk); color: var(--ink); font-family: var(--f-body); font-size: 16px; line-height: 1.55; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--sheet); }
+h1, h2, h3 { font-family: var(--f-display); text-wrap: balance; margin: 0; line-height: 1.2; }
+button, input, textarea, select { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+.wrap { max-width: 860px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+
+/* Header */
+.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--sheet); border-bottom: 1px solid var(--line); }
+.top-row { display: flex; align-items: center; gap: 12px; padding-block: 10px; }
+.brand { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+.brand b { font-family: var(--f-display); font-size: 1.05rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.brand span { font-size: .78rem; color: var(--muted); }
+.timer { font-variant-numeric: tabular-nums; font-weight: 600; font-size: .9rem; padding: 6px 10px; border-radius: 999px; background: var(--soft); border: 1px solid var(--line); white-space: nowrap; }
+.timer.low { background: var(--mark-soft); color: var(--mark); border-color: transparent; }
+.saved { font-size: .75rem; color: var(--muted); white-space: nowrap; }
+.steps { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 10px; scrollbar-width: none; }
+.steps::-webkit-scrollbar { display: none; }
+.step { flex: 1 0 auto; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--sheet); cursor: pointer; text-align: left; min-width: 112px; }
+.step .k { font-size: .7rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.step .n { font-size: .88rem; font-weight: 600; white-space: nowrap; }
+.step .bar { width: 100%; height: 3px; border-radius: 2px; background: var(--line); overflow: hidden; margin-top: 4px; }
+.step .bar i { display: block; height: 100%; background: var(--accent); width: 0; transition: width .25s; }
+.step[aria-current="step"] { border-color: var(--accent); background: var(--accent-soft); }
+.step.done .bar i { background: var(--good); }
+
+/* Sheet */
+main { padding-block: 24px 120px; }
+.sheet { background: var(--sheet); border: 1px solid var(--line); border-radius: 14px; padding: clamp(20px, 4vw, 40px); }
+.sec-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 16px; padding-bottom: 16px; margin-bottom: 24px; border-bottom: 2px solid var(--ink); }
+.sec-head .eyebrow { display: block; font-size: .75rem; letter-spacing: .1em; text-transform: uppercase; color: var(--accent); font-weight: 700; margin-bottom: 4px; }
+.sec-head h2 { font-size: clamp(1.5rem, 3.5vw, 2rem); }
+.sec-head .marks { font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.instr { color: var(--muted); margin: -8px 0 24px; max-width: 65ch; }
+
+.q { display: grid; grid-template-columns: 34px 1fr; gap: 14px; padding-block: 18px; border-top: 1px solid var(--line); }
+.q:first-of-type { border-top: 0; }
+.qn { width: 34px; height: 34px; border-radius: 50%; border: 2px solid var(--ink); display: grid; place-items: center; font-weight: 700; font-size: .9rem; font-variant-numeric: tabular-nums; }
+.q.answered .qn { background: var(--ink); color: var(--sheet); }
+.qbody { min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+.qtext { font-weight: 600; margin: 0; }
+.qmeta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; font-size: .82rem; color: var(--muted); }
+.qmarks { font-variant-numeric: tabular-nums; }
+
+.hint-btn { background: none; border: 0; padding: 0; color: var(--accent); font-weight: 600; font-size: .82rem; cursor: pointer; }
+.hint { background: var(--pencil-soft); color: var(--pencil-ink); border-left: 4px solid var(--pencil); padding: 8px 12px; border-radius: 0 8px 8px 0; font-size: .9rem; }
+body.no-hints .hint-btn, body.no-hints .hint { display: none !important; }
+
+textarea, input[type="text"], input[type="date"], input[type="number"], select {
+  width: 100%; background: var(--soft); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px;
+}
+textarea { resize: vertical; line-height: 1.6; min-height: 84px; }
+textarea:focus, input:focus, select:focus { border-color: var(--accent); background: var(--sheet); outline: none; box-shadow: 0 0 0 3px var(--accent-soft); }
+.lined { background-image: repeating-linear-gradient(to bottom, transparent 0, transparent calc(1.6em - 1px), var(--line) calc(1.6em - 1px), var(--line) 1.6em); background-attachment: local; background-position: 0 10px; line-height: 1.6em; }
+.counter { font-size: .8rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.counter.ok { color: var(--good); }
+
+/* Options */
+.opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.opts.stack { flex-direction: column; }
+.opt { position: relative; display: flex; align-items: center; gap: 10px; padding: 10px 14px; border: 1.5px solid var(--line); border-radius: 8px; cursor: pointer; background: var(--sheet); }
+.opt:hover { border-color: var(--accent); }
+.opt input { position: absolute; opacity: 0; pointer-events: none; }
+.opt .dot { width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--muted); flex-shrink: 0; display: grid; place-items: center; }
+.opt .letter { font-weight: 700; color: var(--muted); font-size: .85rem; }
+.opt:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); }
+.opt:has(input:checked) .dot { border-color: var(--accent); }
+.opt:has(input:checked) .dot::after { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+.opt:has(input:focus-visible) { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+/* Passage */
+.passage { font-family: var(--f-read); font-size: 1.06rem; line-height: 1.75; background: var(--soft); border: 1px solid var(--line); border-radius: var(--r); padding: clamp(16px, 3vw, 28px); margin-bottom: 8px; }
+.passage h3 { font-size: 1.2rem; margin-bottom: 12px; }
+.passage p { margin: 0 0 1em; max-width: 68ch; }
+.passage p:last-child { margin-bottom: 0; }
+.passage .ln { counter-increment: para; position: relative; }
+.toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 28px; font-size: .82rem; color: var(--muted); }
+.editor { display: flex; flex-direction: column; gap: 10px; margin-bottom: 28px; }
+
+/* Buttons */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 11px 18px; border-radius: 8px; border: 1.5px solid var(--line); background: var(--sheet); font-weight: 600; cursor: pointer; text-decoration: none; }
+.btn:hover { border-color: var(--ink); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn.primary:hover { filter: brightness(1.08); }
+.btn.small { padding: 6px 12px; font-size: .85rem; }
+.btn.danger { color: var(--mark); }
+.btn.danger.armed { background: var(--mark); border-color: var(--mark); color: var(--sheet); }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+
+/* Footer nav */
+.foot { position: fixed; left: 0; right: 0; bottom: 0; z-index: 5; background: var(--sheet); border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom, 0px); }
+.foot-row { display: flex; align-items: center; gap: 12px; padding-block: 12px; }
+.foot-row .where { flex: 1; text-align: center; font-size: .85rem; color: var(--muted); min-width: 0; }
+.foot-row .where b { color: var(--ink); display: block; font-size: .95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Cover */
+.cover-title { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 8px; padding-bottom: 24px; border-bottom: 2px solid var(--ink); margin-bottom: 24px; }
+.crest { width: 64px; height: 64px; }
+.cover-title h1 { font-size: clamp(1.8rem, 5vw, 2.6rem); }
+.cover-title p { margin: 0; color: var(--muted); }
+.fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px; }
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field label, .lbl { font-size: .78rem; letter-spacing: .06em; text-transform: uppercase; font-weight: 700; color: var(--muted); }
+.paper-table { width: 100%; border-collapse: collapse; margin-bottom: 24px; font-variant-numeric: tabular-nums; }
+.paper-table th, .paper-table td { text-align: left; padding: 10px 8px; border-bottom: 1px solid var(--line); }
+.paper-table th { font-size: .75rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.paper-table td:last-child, .paper-table th:last-child { text-align: right; }
+.paper-table tfoot td { font-weight: 700; border-bottom: 0; border-top: 2px solid var(--ink); }
+.rules { display: grid; gap: 8px; padding: 0; margin: 0 0 24px; list-style: none; counter-reset: r; }
+.rules li { counter-increment: r; display: grid; grid-template-columns: 28px 1fr; gap: 10px; }
+.rules li::before { content: counter(r); width: 24px; height: 24px; border-radius: 50%; background: var(--soft); border: 1px solid var(--line); display: grid; place-items: center; font-size: .8rem; font-weight: 700; }
+.toggle { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+.toggle input { width: 18px; height: 18px; accent-color: var(--accent); }
+.cover-actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; align-items: center; padding-top: 20px; border-top: 1px solid var(--line); }
+
+/* Writing */
+.prompts { display: grid; gap: 10px; }
+.prompt-card { display: grid; grid-template-columns: auto 1fr; gap: 12px; align-items: start; padding: 14px 16px; border: 1.5px solid var(--line); border-radius: var(--r); cursor: pointer; }
+.prompt-card:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); }
+.prompt-card input { margin-top: 4px; accent-color: var(--accent); width: 18px; height: 18px; }
+.prompt-card b { display: block; font-family: var(--f-display); }
+.prompt-card span { color: var(--muted); font-size: .92rem; }
+.meter { height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; }
+.meter i { display: block; height: 100%; width: 0; background: var(--accent); transition: width .2s; }
+.meter.ok i { background: var(--good); }
+.meter.over i { background: var(--mark); }
+.checklist { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 6px 16px; font-size: .9rem; color: var(--muted); padding: 12px 16px; background: var(--soft); border-radius: var(--r); margin: 0; list-style: none; }
+.checklist li::before { content: "☐ "; }
+
+/* Results */
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 28px; }
+.tile { border: 1px solid var(--line); border-radius: var(--r); padding: 14px; display: flex; flex-direction: column; gap: 2px; }
+.tile .lbl { font-size: .7rem; }
+.tile .val { font-family: var(--f-display); font-size: 1.7rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.tile .sub { font-size: .8rem; color: var(--muted); }
+.tile.total { background: var(--ink); color: var(--sheet); border-color: var(--ink); }
+.tile.total .lbl, .tile.total .sub { color: inherit; opacity: .75; }
+.res-block { margin-bottom: 32px; }
+.res-block h3 { font-size: 1.2rem; margin-bottom: 12px; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.res-block h3 small { font-family: var(--f-body); font-size: .9rem; color: var(--mark); font-weight: 700; font-variant-numeric: tabular-nums; }
+.mark-row { display: grid; grid-template-columns: 1fr auto; gap: 8px 16px; padding: 14px 0; border-top: 1px solid var(--line); }
+.mark-row > div { min-width: 0; }
+.mark-row .ans { white-space: pre-wrap; background: var(--soft); border-radius: 8px; padding: 8px 12px; margin: 6px 0; font-size: .92rem; overflow-wrap: anywhere; }
+.mark-row .ans.empty { color: var(--muted); font-style: italic; }
+.mark-row .key { font-size: .85rem; color: var(--good); }
+.mark-in { display: flex; align-items: center; gap: 6px; color: var(--mark); font-weight: 700; font-variant-numeric: tabular-nums; }
+.mark-in input { width: 64px; text-align: center; color: var(--mark); border-color: var(--mark); background: var(--mark-soft); font-weight: 700; padding: 6px; }
+.b-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+.b-item { border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; font-size: .85rem; display: flex; flex-direction: column; gap: 2px; }
+.b-item.right { background: var(--good-soft); border-color: transparent; }
+.b-item.wrong { background: var(--mark-soft); border-color: transparent; }
+.b-item b { font-variant-numeric: tabular-nums; }
+.b-item .r { font-weight: 700; }
+.b-item.right .r { color: var(--good); }
+.b-item.wrong .r { color: var(--mark); }
+.notice { background: var(--pencil-soft); color: var(--pencil-ink); border-radius: var(--r); padding: 12px 16px; margin-bottom: 20px; font-size: .92rem; }
+
+@media (max-width: 520px) {
+  .saved { display: none; }
+  .foot-row .btn { padding: 10px 14px; }
+  .q { grid-template-columns: 1fr; gap: 8px; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; scroll-behavior: auto !important; } }
+
+@media print {
+  body { background: #fff; color: #000; }
+  .top, .foot, .no-print, .hint-btn, .hint, #view-results { display: none !important; }
+  .view[hidden]:not(#view-results) { display: block !important; }
+  .view { break-before: page; }
+  .view:first-child { break-before: auto; }
+  main { padding: 0; }
+  .sheet { border: 0; padding: 0; }
+  textarea { border: 1px solid #999; min-height: 120px; }
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <div class="top-row">
+      <div class="brand"><b id="brandTitle">English Entrance Exam</b><span id="brandSub">Mock paper · Age 10</span></div>
+      <span class="saved" id="savedNote" aria-live="polite"></span>
+      <span class="timer" id="timer" hidden></span>
+      <button class="btn small no-print" id="printBtn" type="button" hidden>Print</button>
+    </div>
+    <nav class="steps" id="steps" aria-label="Exam sections"></nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <!-- COVER -->
+  <section class="view" id="view-cover" data-view="cover">
+    <div class="sheet">
+      <div class="cover-title">
+        <svg class="crest" viewBox="0 0 64 64" aria-hidden="true">
+          <path d="M32 4 56 12v18c0 15-10 25-24 30C18 55 8 45 8 30V12Z" fill="var(--ink)"/>
+          <path d="M20 22h10c2 0 2 1 2 2v18c0-1-1-2-3-2h-9Z M44 22H34c-2 0-2 1-2 2v18c0-1 1-2 3-2h9Z" fill="var(--sheet)"/>
+          <path d="M32 9 50 15" stroke="var(--pencil)" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        </svg>
+        <h1>English Entrance Exam</h1>
+        <p>Mock paper for pupils aged 10 · Reading, grammar and writing</p>
+      </div>
+
+      <div class="fields">
+        <div class="field"><label for="f-name">Pupil name</label><input type="text" id="f-name" autocomplete="off" placeholder="First and last name"></div>
+        <div class="field"><label for="f-date">Date</label><input type="date" id="f-date"></div>
+        <div class="field"><label for="f-time">Time allowed</label>
+          <select id="f-time">
+            <option value="0">No timer</option>
+            <option value="45">45 minutes</option>
+            <option value="60">60 minutes</option>
+            <option value="75">75 minutes</option>
+            <option value="90">90 minutes</option>
+          </select>
+        </div>
+      </div>
+
+      <table class="paper-table">
+        <thead><tr><th>Section</th><th>What you do</th><th>Suggested time</th><th>Marks</th></tr></thead>
+        <tbody>
+          <tr><td>A</td><td>Reading comprehension</td><td>20 min</td><td>15</td></tr>
+          <tr><td>B</td><td>Grammar and vocabulary</td><td>15 min</td><td>40</td></tr>
+          <tr><td>C</td><td>Short written answers</td><td>15 min</td><td>20</td></tr>
+          <tr><td>D</td><td>Creative writing</td><td>25 min</td><td>25</td></tr>
+        </tbody>
+        <tfoot><tr><td colspan="3">Total</td><td>100</td></tr></tfoot>
+      </table>
+
+      <p class="lbl" style="margin:0 0 10px">Instructions</p>
+      <ol class="rules">
+        <li>Read each question carefully before you answer.</li>
+        <li>Use the Next button to move through the sections. You can go back at any time.</li>
+        <li>Write in full sentences for Sections C and D.</li>
+        <li>Your answers save on this device as you type.</li>
+        <li>If a question feels difficult, move on and come back to it later.</li>
+      </ol>
+
+      <div class="cover-actions">
+        <label class="toggle"><input type="checkbox" id="f-hints" checked> Show hint buttons</label>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn danger" id="resetBtn" type="button">Clear all answers</button>
+          <button class="btn primary" id="startBtn" type="button">Start the exam</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- A -->
+  <section class="view" id="view-reading" data-view="reading" hidden>
+    <div class="sheet">
+      <div class="sec-head"><div><span class="eyebrow">Section A</span><h2>Reading Comprehension</h2></div><span class="marks">15 marks</span></div>
+      <p class="instr">Read the passage carefully. You may look back at it as often as you like while you answer.</p>
+      <article class="passage" id="passage"></article>
+      <div class="toolbar no-print">
+        <span id="wordCount"></span>
+        <span style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn small" type="button" id="editPassageBtn">Edit passage</button>
+          <button class="btn small" type="button" id="uploadBtn">Upload .txt</button>
+          <input type="file" id="passageFile" accept=".txt,text/plain" hidden>
+        </span>
+      </div>
+      <div class="editor no-print" id="passageEditor" hidden>
+        <label class="lbl" for="passageInput">Passage text (first line becomes the title; blank lines start new paragraphs)</label>
+        <textarea id="passageInput" rows="12"></textarea>
+        <div class="hint">For age 10, aim for 200–300 words with a clear story and a lesson. If you change the passage, check that the questions still fit it.</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn primary small" type="button" id="savePassageBtn">Save passage</button>
+          <button class="btn small" type="button" id="cancelPassageBtn">Cancel</button>
+          <button class="btn small" type="button" id="defaultPassageBtn">Restore original</button>
+        </div>
+      </div>
+      <div id="qA"></div>
+    </div>
+  </section>
+
+  <!-- B -->
+  <section class="view" id="view-grammar" data-view="grammar" hidden>
+    <div class="sheet">
+      <div class="sec-head"><div><span class="eyebrow">Section B</span><h2>Grammar and Vocabulary</h2></div><span class="marks">40 marks · 2 each</span></div>
+      <p class="instr">Choose one answer for each question.</p>
+      <div id="qB"></div>
+    </div>
+  </section>
+
+  <!-- C -->
+  <section class="view" id="view-short-answers" data-view="short-answers" hidden>
+    <div class="sheet">
+      <div class="sec-head"><div><span class="eyebrow">Section C</span><h2>Short Written Answers</h2></div><span class="marks">20 marks · 5 each</span></div>
+      <p class="instr">Answer each question in 3 to 5 complete sentences. Give reasons and examples.</p>
+      <div id="qC"></div>
+    </div>
+  </section>
+
+  <!-- D -->
+  <section class="view" id="view-writing" data-view="writing" hidden>
+    <div class="sheet">
+      <div class="sec-head"><div><span class="eyebrow">Section D</span><h2>Creative Writing</h2></div><span class="marks">25 marks</span></div>
+      <p class="instr">Choose <b>one</b> title. Spend about 5 minutes planning, then write 150–250 words.</p>
+      <div class="prompts" id="prompts"></div>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:24px">
+        <label class="lbl" for="d-plan">Plan (not marked)</label>
+        <textarea id="d-plan" rows="3" placeholder="Beginning · problem · ending · three good words you want to use"></textarea>
+        <label class="lbl" for="d-text" style="margin-top:8px">Your writing</label>
+        <textarea id="d-text" class="lined" rows="16"></textarea>
+        <div class="meter" id="d-meter"><i></i></div>
+        <div class="qmeta"><span class="counter" id="d-count">0 words</span><span>Target 150–250</span></div>
+        <p class="lbl" style="margin:12px 0 0">Before you finish, check</p>
+        <ul class="checklist">
+          <li>Capital letters and full stops</li>
+          <li>Paragraphs for new ideas</li>
+          <li>Speech marks around dialogue</li>
+          <li>Interesting verbs and adjectives</li>
+          <li>Different sentence openers</li>
+          <li>A clear ending</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- RESULTS -->
+  <section class="view" id="view-results" data-view="results" hidden>
+    <div class="sheet">
+      <div class="sec-head"><div><span class="eyebrow">Marking</span><h2 id="resTitle">Results</h2></div><span class="marks" id="resDate"></span></div>
+      <div id="results"></div>
+    </div>
+  </section>
+</main>
+
+<footer class="foot no-print">
+  <div class="wrap foot-row">
+    <button class="btn" type="button" id="backBtn">← Back</button>
+    <div class="where" id="where"></div>
+    <button class="btn primary" type="button" id="nextBtn">Next →</button>
+  </div>
+</footer>
+
+<script>
+(() => {
+  const DEFAULT_PASSAGE = `The Clockmaker's Gift
+
+The old clockmaker sat in his small shop, surrounded by ticking clocks of every shape and size. For fifty years he had mended broken timepieces, bringing them back to life with patient hands and a keen eye.
+
+One rainy afternoon, a young girl stepped through the door holding a rusty pocket watch. "My grandfather left me this," she said softly, "but it hasn't worked for years."
+
+The clockmaker turned the watch over in his weathered hands. Inside the lid he found an inscription: "Time is a gift. Use it wisely." He smiled at the engraving and set to work.
+
+Day after day the girl returned to the shop. She watched as he cleaned each tiny gear and adjusted every spring. He showed her how clocks worked, how each piece depended on another, and why precision mattered.
+
+After three weeks, the pocket watch began to tick. The sound was gentle and steady, like a heartbeat returning to life. The girl's eyes filled with tears of joy. "Thank you," she whispered.
+
+The clockmaker placed the watch in her palm. "Now you can pass your grandfather's gift on to someone you love one day."
+
+She nodded. She understood that he had given her something far more valuable than a working watch. He had taught her the art of patience and care.`;
+
+  const A = [
+    { q: "What is the old man's job, and how long has he been doing it?", m: 2, hint: "Look at the first paragraph.", key: "He is a clockmaker who mends broken clocks and watches (1). He has done it for fifty years (1)." },
+    { q: "What words were engraved inside the pocket watch?", m: 1, hint: "Find the inscription in the third paragraph.", key: "\"Time is a gift. Use it wisely.\"" },
+    { q: "Give three things the clockmaker taught the girl.", m: 3, hint: "Look at the paragraph that begins \"Day after day\".", key: "How clocks worked; how each piece depended on another; why precision mattered (1 mark each)." },
+    { q: "How long did it take to repair the watch?", m: 1, hint: "How many weeks passed before it ticked?", key: "Three weeks." },
+    { q: "The ticking is described as \"like a heartbeat returning to life\". What does this comparison suggest about the watch?", m: 3, hint: "Think about what a heartbeat means. Why might the watch feel alive to the girl?", key: "Identifies the simile (1); the watch seems alive again / brought back from the dead (1); it links to her grandfather's memory or her strong feelings (1)." },
+    { q: "What was \"far more valuable than a working watch\"? Explain your answer using evidence from the passage.", m: 5, hint: "What did she learn by visiting every day? How does the inscription connect to this?", key: "Patience and care (1–2). Evidence: she watched every day for three weeks; he taught her how pieces depend on each other (1–2). Strong answers link to the inscription about using time wisely or to passing the gift on (1)." },
+  ];
+
+  const B = [
+    { q: "Which sentence is in the present tense?", o: ["She walked home.", "She walks home.", "She will walk home."], a: 1, hint: "Present tense describes what happens now or regularly.", stack: true },
+    { q: "They ____ playing football in the park.", o: ["is", "are", "am"], a: 1, hint: "\"They\" is plural." },
+    { q: "What does \"persevere\" mean?", o: ["To give up quickly", "To keep trying despite difficulty", "To argue loudly"], a: 1, hint: "Think of someone who does not give up.", stack: true },
+    { q: "Which sentence is punctuated correctly?", o: ["what time is it", "What time is it?", "What time is it."], a: 1, hint: "Capital letter at the start. What goes at the end of a question?", stack: true },
+    { q: "I ____ seen that film twice.", o: ["have", "has", "having"], a: 0, hint: "\"I\" goes with which form?" },
+    { q: "Which word is a verb?", o: ["happy", "jump", "slowly"], a: 1, hint: "A verb is an action or a state of being." },
+    { q: "Choose the correct spelling.", o: ["recieve", "receive", "receeve"], a: 1, hint: "\"i before e except after c\"." },
+    { q: "Which word is a pronoun?", o: ["they", "table", "quickly"], a: 0, hint: "A pronoun replaces a noun." },
+    { q: "What is the opposite of \"kind\"?", o: ["cruel", "gentle", "funny"], a: 0, hint: "Think of someone who is not kind." },
+    { q: "If I ____ you were coming, I would have cooked dinner.", o: ["know", "knew", "had known"], a: 2, hint: "Look at \"would have cooked\". It needs a matching past form." },
+    { q: "Which word is a conjunction?", o: ["but", "running", "quickly"], a: 0, hint: "Conjunctions join words or clauses." },
+    { q: "Neither Emma nor James ____ ready for the test.", o: ["is", "are"], a: 0, hint: "With neither…nor, the verb agrees with the nearer noun: James." },
+    { q: "What does \"eloquent\" mean?", o: ["Shy and quiet", "Speaking clearly and expressively", "Moving very fast"], a: 1, hint: "An eloquent speaker uses language beautifully.", stack: true },
+    { q: "Each of the pupils ____ a pencil.", o: ["has", "have"], a: 0, hint: "The subject is \"each\", which is singular." },
+    { q: "Which word is an adverb in this sentence? \"The fox crept silently past the hens.\"", o: ["fox", "crept", "silently", "hens"], a: 2, hint: "Adverbs tell us how, when or where. Many end in -ly." },
+    { q: "I wish I ____ taller. (formal written English)", o: ["was", "were", "am"], a: 1, hint: "In formal wishes and imagined situations we use \"were\"." },
+    { q: "What does \"meticulous\" mean?", o: ["Very careful and paying attention to detail", "Careless and messy", "Very tired"], a: 0, hint: "The clockmaker in Section A works this way.", stack: true },
+    { q: "Which sentence uses an apostrophe correctly?", o: ["The cat's bowl is empty.", "The cats's bowl is empty.", "The cat,s bowl is empty."], a: 0, hint: "One cat owns the bowl.", stack: true },
+    { q: "One child, many ____.", o: ["childs", "children", "childes"], a: 1, hint: "This is an irregular plural." },
+    { q: "What does \"diligent\" mean?", o: ["Lazy and unmotivated", "Hardworking and thorough", "Easily frightened"], a: 1, hint: "A diligent pupil always does their homework carefully.", stack: true },
+  ];
+
+  const C = [
+    { q: "Describe a time you felt proud of something you achieved. What did you do, and why did it make you proud?", hint: "Say what happened, how you felt, and why it mattered to you." },
+    { q: "What advice would you give a younger pupil about being a good friend?", hint: "Give two or three pieces of advice with a reason for each." },
+    { q: "Why is it important to learn new skills? Name one skill you would like to learn and explain why.", hint: "Answer both parts: why skills matter in general, then your own example." },
+    { q: "What makes someone a good role model? Describe a person who inspires you and explain why.", hint: "Name the qualities first, then show how your person has them." },
+  ];
+
+  const D = [
+    { t: "The Door at the End of the Corridor", s: "Begin your story with: \"Nobody had opened that door for a hundred years.\"" },
+    { t: "Market Day", s: "Describe a busy market from the point of view of a cat that lives there. Use all five senses." },
+    { t: "The Watch", s: "Continue the story from Section A. Years later, the girl gives the watch to someone she loves. Who is it, and what happens?" },
+  ];
+  const D_RUBRIC = [
+    { k: "content", l: "Ideas and content", m: 10 },
+    { k: "org", l: "Organisation and paragraphs", m: 5 },
+    { k: "vocab", l: "Vocabulary and sentence variety", m: 5 },
+    { k: "spag", l: "Spelling, punctuation and grammar", m: 5 },
+  ];
+
+  const VIEWS = [
+    { id: "cover", k: "Start", n: "Cover page" },
+    { id: "reading", k: "Section A", n: "Reading" },
+    { id: "grammar", k: "Section B", n: "Grammar" },
+    { id: "short-answers", k: "Section C", n: "Short answers" },
+    { id: "writing", k: "Section D", n: "Creative writing" },
+    { id: "results", k: "Finish", n: "Results" },
+  ];
+
+  const KEY = "english-entrance-mock-v1";
+  const blank = () => ({ name: "", date: new Date().toISOString().slice(0, 10), minutes: 75, hints: true, startedAt: null, passage: null, a: {}, b: {}, c: {}, d: { prompt: null, plan: "", text: "" }, marks: { a: {}, c: {}, d: {} } });
+  let S = blank();
+  try { const raw = localStorage.getItem(KEY); if (raw) S = Object.assign(blank(), JSON.parse(raw)); } catch (e) {}
+
+  const $ = (s, r = document) => r.querySelector(s);
+  const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const words = (t) => (t.trim().match(/\S+/g) || []).length;
+  const sentences = (t) => (t.match(/[^.!?]*[A-Za-z][^.!?]*[.!?]+/g) || []).length;
+
+  let saveTimer;
+  function save() {
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(() => {
+      let ok = true;
+      try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { ok = false; }
+      $("#savedNote").textContent = ok ? "Saved on this device" : "Not saved: storage is off";
+      refreshProgress();
+    }, 250);
+  }
+
+  /* ---------- Passage ---------- */
+  function renderPassage() {
+    const text = (S.passage || DEFAULT_PASSAGE).trim();
+    const parts = text.split(/\n\s*\n/);
+    let title = "";
+    if (parts.length > 1 && parts[0].length < 80 && !/[.!?"]$/.test(parts[0].trim())) title = parts.shift().trim();
+    $("#passage").innerHTML = (title ? `<h3>${esc(title)}</h3>` : "") + parts.map((p) => `<p>${esc(p.trim()).replace(/\n/g, " ")}</p>`).join("");
+    $("#wordCount").textContent = `${words(parts.join(" "))} words`;
+  }
+  function togglePassageEditor(open) {
+    $("#passageEditor").hidden = !open;
+    $("#editPassageBtn").hidden = open;
+    if (open) { $("#passageInput").value = (S.passage || DEFAULT_PASSAGE).trim(); $("#passageInput").focus(); }
+  }
+  $("#editPassageBtn").onclick = () => togglePassageEditor(true);
+  $("#cancelPassageBtn").onclick = () => togglePassageEditor(false);
+  $("#savePassageBtn").onclick = () => {
+    const v = $("#passageInput").value.trim();
+    if (!v) { $("#passageInput").focus(); return; }
+    S.passage = v === DEFAULT_PASSAGE.trim() ? null : v; renderPassage(); togglePassageEditor(false); save();
+  };
+  $("#defaultPassageBtn").onclick = () => { $("#passageInput").value = DEFAULT_PASSAGE; };
+  $("#uploadBtn").onclick = () => $("#passageFile").click();
+  $("#passageFile").onchange = (e) => {
+    const f = e.target.files[0]; if (!f) return;
+    const r = new FileReader();
+    r.onload = () => { togglePassageEditor(true); $("#passageInput").value = String(r.result).trim(); };
+    r.readAsText(f); e.target.value = "";
+  };
+
+  /* ---------- Questions ---------- */
+  const hintHtml = (h) => `<button type="button" class="hint-btn" aria-expanded="false">Show hint</button><div class="hint" hidden>${esc(h)}</div>`;
+
+  $("#qA").innerHTML = A.map((x, i) => `
+    <div class="q" id="qa-${i}"><div class="qn">${i + 1}</div><div class="qbody">
+      <p class="qtext">${esc(x.q)}</p>
+      <div class="qmeta"><span class="qmarks">${x.m} mark${x.m > 1 ? "s" : ""}</span>${hintHtml(x.hint)}</div>
+      <textarea id="a-${i}" rows="${x.m >= 3 ? 4 : 2}" class="lined" aria-label="Answer to question ${i + 1}"></textarea>
+    </div></div>`).join("");
+
+  const L = "abcd";
+  $("#qB").innerHTML = B.map((x, i) => `
+    <div class="q" id="qb-${i}"><div class="qn">${i + 1}</div><div class="qbody">
+      <p class="qtext">${esc(x.q)}</p>
+      <div class="opts${x.stack ? " stack" : ""}" role="radiogroup" aria-label="Question ${i + 1}">
+        ${x.o.map((o, j) => `<label class="opt"><input type="radio" name="b-${i}" id="b-${i}-${j}" value="${j}"><span class="dot"></span><span class="letter">${L[j]}</span><span>${esc(o)}</span></label>`).join("")}
+      </div>
+      <div class="qmeta">${hintHtml(x.hint)}</div>
+    </div></div>`).join("");
+
+  $("#qC").innerHTML = C.map((x, i) => `
+    <div class="q" id="qc-${i}"><div class="qn">${i + 1}</div><div class="qbody">
+      <p class="qtext">${esc(x.q)}</p>
+      <div class="qmeta"><span class="qmarks">5 marks</span>${hintHtml(x.hint)}</div>
+      <textarea id="c-${i}" rows="6" class="lined" aria-label="Answer to question ${i + 1}"></textarea>
+      <span class="counter" id="c-${i}-count"></span>
+    </div></div>`).join("");
+
+  $("#prompts").innerHTML = D.map((x, i) => `
+    <label class="prompt-card"><input type="radio" name="d-prompt" id="d-p-${i}" value="${i}"><div><b>${esc(x.t)}</b><span>${esc(x.s)}</span></div></label>`).join("");
+
+  document.addEventListener("click", (e) => {
+    const b = e.target.closest(".hint-btn"); if (!b) return;
+    const h = b.nextElementSibling; h.hidden = !h.hidden;
+    b.textContent = h.hidden ? "Show hint" : "Hide hint"; b.setAttribute("aria-expanded", String(!h.hidden));
+  });
+
+  function cCount(i) {
+    const t = S.c[i] || "", n = sentences(t), el = $(`#c-${i}-count`);
+    el.textContent = t.trim() ? `${n} sentence${n === 1 ? "" : "s"} · ${words(t)} words` : "Aim for 3–5 sentences";
+    el.classList.toggle("ok", n >= 3);
+  }
+  function dCount() {
+    const n = words(S.d.text || ""), m = $("#d-meter");
+    $("#d-count").textContent = `${n} word${n === 1 ? "" : "s"}`;
+    m.querySelector("i").style.width = Math.min(100, (n / 250) * 100) + "%";
+    m.classList.toggle("ok", n >= 150 && n <= 250); m.classList.toggle("over", n > 250);
+  }
+
+  /* fill + bind */
+  function fillInputs() {
+    $("#f-name").value = S.name; $("#f-date").value = S.date; $("#f-time").value = String(S.minutes); $("#f-hints").checked = S.hints;
+    A.forEach((_, i) => ($(`#a-${i}`).value = S.a[i] || ""));
+    B.forEach((_, i) => { document.querySelectorAll(`input[name="b-${i}"]`).forEach((r) => (r.checked = S.b[i] === +r.value)); });
+    C.forEach((_, i) => { $(`#c-${i}`).value = S.c[i] || ""; cCount(i); });
+    document.querySelectorAll('input[name="d-prompt"]').forEach((r) => (r.checked = S.d.prompt === +r.value));
+    $("#d-plan").value = S.d.plan || ""; $("#d-text").value = S.d.text || ""; dCount();
+    document.body.classList.toggle("no-hints", !S.hints);
+    renderPassage(); updateBrand();
+  }
+  document.addEventListener("input", (e) => {
+    const t = e.target, id = t.id || "";
+    if (id === "f-name") { S.name = t.value; updateBrand(); }
+    else if (id === "f-date") S.date = t.value;
+    else if (/^a-\d+$/.test(id)) S.a[id.slice(2)] = t.value;
+    else if (/^c-\d+$/.test(id)) { S.c[id.slice(2)] = t.value; cCount(+id.slice(2)); }
+    else if (id === "d-plan") S.d.plan = t.value;
+    else if (id === "d-text") { S.d.text = t.value; dCount(); }
+    else if (t.name && /^b-\d+$/.test(t.name)) S.b[t.name.slice(2)] = +t.value;
+    else if (t.name === "d-prompt") S.d.prompt = +t.value;
+    else if (t.classList.contains("mark")) {
+      const max = +t.max, v = t.value === "" ? "" : Math.max(0, Math.min(max, +t.value));
+      S.marks[t.dataset.s][t.dataset.k] = v; updateTotals();
+    } else return;
+    save();
+  });
+  document.addEventListener("change", (e) => {
+    const t = e.target;
+    if (t.id === "f-time") { S.minutes = +t.value; tick(); save(); }
+    if (t.id === "f-hints") { S.hints = t.checked; document.body.classList.toggle("no-hints", !S.hints); save(); }
+    if (t.classList.contains("mark") && t.value !== "") t.value = S.marks[t.dataset.s][t.dataset.k];
+  });
+
+  function updateBrand() {
+    $("#brandSub").textContent = S.name.trim() ? `${S.name.trim()} · Mock paper · Age 10` : "Mock paper · Age 10";
+  }
+
+  /* ---------- Progress ---------- */
+  const filled = (v) => typeof v === "string" ? v.trim().length > 0 : v !== undefined && v !== null;
+  function progress() {
+    return {
+      cover: [S.name.trim() ? 1 : 0, 1],
+      reading: [A.filter((_, i) => filled(S.a[i])).length, A.length],
+      grammar: [B.filter((_, i) => filled(S.b[i])).length, B.length],
+      "short-answers": [C.filter((_, i) => filled(S.c[i])).length, C.length],
+      writing: [(S.d.prompt !== null ? 1 : 0) + (words(S.d.text || "") >= 150 ? 1 : 0), 2],
+      results: [0, 0],
+    };
+  }
+  function refreshProgress() {
+    const p = progress();
+    VIEWS.forEach((v) => {
+      const btn = $(`#step-${v.id}`), [d, t] = p[v.id];
+      btn.querySelector(".bar i").style.width = t ? (d / t) * 100 + "%" : "0";
+      btn.classList.toggle("done", t > 0 && d === t);
+      const sub = btn.querySelector(".k");
+      sub.textContent = v.k + (t > 1 && v.id !== "writing" ? ` · ${d}/${t}` : "");
+    });
+    A.forEach((_, i) => $(`#qa-${i}`).classList.toggle("answered", filled(S.a[i])));
+    B.forEach((_, i) => $(`#qb-${i}`).classList.toggle("answered", filled(S.b[i])));
+    C.forEach((_, i) => $(`#qc-${i}`).classList.toggle("answered", filled(S.c[i])));
+  }
+  $("#steps").innerHTML = VIEWS.map((v) => `<button type="button" class="step" id="step-${v.id}" data-go="${v.id}"><span class="k">${v.k}</span><span class="n">${v.n}</span><span class="bar"><i></i></span></button>`).join("");
+  $("#steps").addEventListener("click", (e) => { const b = e.target.closest("[data-go]"); if (b) go(b.dataset.go); });
+
+  /* ---------- Navigation ---------- */
+  let cur = "cover";
+  function show(id) {
+    if (!VIEWS.some((v) => v.id === id)) id = "cover";
+    cur = id;
+    document.querySelectorAll(".view").forEach((s) => (s.hidden = s.dataset.view !== id));
+    VIEWS.forEach((v) => { const b = $(`#step-${v.id}`); if (v.id === id) b.setAttribute("aria-current", "step"); else b.removeAttribute("aria-current"); });
+    const i = VIEWS.findIndex((v) => v.id === id);
+    $("#backBtn").disabled = i === 0;
+    const next = VIEWS[i + 1];
+    $("#nextBtn").textContent = id === "cover" ? "Start →" : id === "writing" ? "Finish →" : next ? `Next →` : "Back to start";
+    $("#where").innerHTML = `<b>${VIEWS[i].k === "Start" || VIEWS[i].k === "Finish" ? VIEWS[i].n : VIEWS[i].k + ": " + VIEWS[i].n}</b>${next ? "Next: " + next.n : "Step " + (i + 1) + " of " + VIEWS.length}`;
+    if (id === "results") renderResults();
+    $(`#step-${id}`).scrollIntoView({ block: "nearest", inline: "center" });
+    window.scrollTo(0, 0);
+  }
+  function go(id) {
+    if (location.hash !== "#" + id) location.hash = id; else show(id);
+  }
+  window.addEventListener("hashchange", () => show(location.hash.slice(1)));
+  $("#backBtn").onclick = () => { const i = VIEWS.findIndex((v) => v.id === cur); if (i > 0) go(VIEWS[i - 1].id); };
+  $("#nextBtn").onclick = () => {
+    const i = VIEWS.findIndex((v) => v.id === cur);
+    if (cur === "cover") startExam();
+    if (i < VIEWS.length - 1) go(VIEWS[i + 1].id); else go("cover");
+  };
+  $("#startBtn").onclick = () => { startExam(); go("reading"); };
+  function startExam() { if (!S.startedAt && S.minutes > 0) { S.startedAt = Date.now(); save(); } tick(); }
+
+  let armed;
+  $("#resetBtn").onclick = (e) => {
+    const b = e.currentTarget;
+    if (!b.classList.contains("armed")) {
+      b.classList.add("armed"); b.textContent = "Tap again to clear everything";
+      armed = setTimeout(() => { b.classList.remove("armed"); b.textContent = "Clear all answers"; }, 3500);
+      return;
+    }
+    clearTimeout(armed); b.classList.remove("armed"); b.textContent = "Cleared";
+    const passage = S.passage; S = blank(); S.passage = passage;
+    fillInputs(); save(); tick();
+    setTimeout(() => (b.textContent = "Clear all answers"), 1500);
+  };
+
+  /* ---------- Timer ---------- */
+  function tick() {
+    const el = $("#timer");
+    if (!S.minutes) { el.hidden = true; return; }
+    el.hidden = false;
+    if (!S.startedAt) { el.textContent = `${S.minutes}:00`; el.classList.remove("low"); return; }
+    const left = Math.round((S.startedAt + S.minutes * 60000 - Date.now()) / 1000);
+    if (left <= 0) { el.textContent = "Time is up"; el.classList.add("low"); return; }
+    el.textContent = `${Math.floor(left / 60)}:${String(left % 60).padStart(2, "0")} left`;
+    el.classList.toggle("low", left <= 300);
+  }
+  setInterval(tick, 1000);
+
+  /* ---------- Results ---------- */
+  const bScore = () => B.reduce((s, x, i) => s + (S.b[i] === x.a ? 2 : 0), 0);
+  const sum = (o) => Object.values(o).reduce((s, v) => s + (v === "" || v == null ? 0 : +v), 0);
+  const markIn = (s, k, max) => `<label class="mark-in"><input class="mark" type="number" inputmode="numeric" min="0" max="${max}" step="1" id="m-${s}-${k}" data-s="${s}" data-k="${k}" value="${S.marks[s][k] ?? ""}" aria-label="Mark out of ${max}"> / ${max}</label>`;
+  const ans = (t) => filled(t) ? `<div class="ans">${esc(t)}</div>` : `<div class="ans empty">No answer</div>`;
+
+  function renderResults() {
+    $("#resTitle").textContent = S.name.trim() ? `Results for ${S.name.trim()}` : "Results";
+    $("#resDate").textContent = S.date ? new Date(S.date + "T12:00").toLocaleDateString(undefined, { day: "numeric", month: "long", year: "numeric" }) : "";
+    const p = progress();
+    const blanks = (p.reading[1] - p.reading[0]) + (p.grammar[1] - p.grammar[0]) + (p["short-answers"][1] - p["short-answers"][0]) + (filled(S.d.text) ? 0 : 1);
+    const dw = words(S.d.text || "");
+    $("#results").innerHTML = `
+      ${blanks ? `<div class="notice">${blanks} answer${blanks === 1 ? " is" : "s are"} blank. You can go back to any section using the tabs above.</div>` : ""}
+      <div class="tiles">
+        <div class="tile"><span class="lbl">A · Reading</span><span class="val" id="t-a">–</span><span class="sub">out of 15 · teacher</span></div>
+        <div class="tile"><span class="lbl">B · Grammar</span><span class="val">${bScore()}</span><span class="sub">out of 40 · auto-marked</span></div>
+        <div class="tile"><span class="lbl">C · Short answers</span><span class="val" id="t-c">–</span><span class="sub">out of 20 · teacher</span></div>
+        <div class="tile"><span class="lbl">D · Writing</span><span class="val" id="t-d">–</span><span class="sub">out of 25 · teacher</span></div>
+        <div class="tile total"><span class="lbl">Total</span><span class="val" id="t-total">–</span><span class="sub" id="t-pct">out of 100</span></div>
+      </div>
+
+      <div class="res-block"><h3>Section B · Grammar and vocabulary <small>${bScore()} / 40</small></h3>
+        <div class="b-grid">${B.map((x, i) => {
+          const c = S.b[i], ok = c === x.a, none = c === undefined;
+          return `<div class="b-item ${none ? "" : ok ? "right" : "wrong"}"><b>Q${i + 1} <span class="r">${none ? "–" : ok ? "✓" : "✗"}</span></b><span>${none ? "Not answered" : esc(x.o[c])}</span>${ok ? "" : `<span>Answer: ${L[x.a]}) ${esc(x.o[x.a])}</span>`}</div>`;
+        }).join("")}</div>
+      </div>
+
+      <div class="res-block"><h3>Section A · Reading <small id="s-a"></small></h3>
+        ${A.map((x, i) => `<div class="mark-row"><div><b>${i + 1}. ${esc(x.q)}</b>${ans(S.a[i])}<div class="key">Mark scheme: ${esc(x.key)}</div></div>${markIn("a", i, x.m)}</div>`).join("")}
+      </div>
+
+      <div class="res-block"><h3>Section C · Short answers <small id="s-c"></small></h3>
+        ${C.map((x, i) => `<div class="mark-row"><div><b>${i + 1}. ${esc(x.q)}</b>${ans(S.c[i])}<div class="key">Mark scheme: full sentences (1), answers every part of the question (2), reasons or examples (2).</div></div>${markIn("c", i, 5)}</div>`).join("")}
+      </div>
+
+      <div class="res-block"><h3>Section D · Creative writing <small id="s-d"></small></h3>
+        <p style="margin:0 0 6px"><b>${S.d.prompt != null ? esc(D[S.d.prompt].t) : "No title chosen"}</b> · ${dw} words</p>
+        ${ans(S.d.text)}
+        ${D_RUBRIC.map((r) => `<div class="mark-row"><div><b>${esc(r.l)}</b></div>${markIn("d", r.k, r.m)}</div>`).join("")}
+      </div>`;
+    updateTotals();
+  }
+  function updateTotals() {
+    if (cur !== "results") return;
+    const a = sum(S.marks.a), c = sum(S.marks.c), d = sum(S.marks.d), b = bScore();
+    const any = (o) => Object.values(o).some((v) => v !== "" && v != null);
+    const set = (id, v) => { const el = $(id); if (el) el.textContent = v; };
+    set("#t-a", any(S.marks.a) ? a : "–"); set("#t-c", any(S.marks.c) ? c : "–"); set("#t-d", any(S.marks.d) ? d : "–");
+    set("#s-a", `${a} / 15`); set("#s-c", `${c} / 20`); set("#s-d", `${d} / 25`);
+    const total = a + b + c + d;
+    set("#t-total", total); set("#t-pct", `out of 100 · ${total}%`);
+  }
+
+  /* ---------- Print (only outside an embedded frame) ---------- */
+  if (window.top === window.self) { const pb = $("#printBtn"); pb.hidden = false; pb.onclick = () => window.print(); }
+
+  fillInputs(); refreshProgress(); tick();
+  show(location.hash.slice(1) || "cover");
+})();
+</script>
+</body>
+</html>
