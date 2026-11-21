@@ -15,7 +15,9 @@ const fmtDate = iso => { try { return new Date(iso).toLocaleDateString(undefined
 const clampRating = v => { const n = Math.round(+v); return Number.isFinite(n) ? Math.min(10, Math.max(1, n)) : 5; };
 
 function toast(message, { error = false, action, actionLabel, timeout = 3500 } = {}) {
+  $$('#toasts .toast').filter(t => t.dataset.msg === message).forEach(t => t.remove());
   const el = document.createElement('div');
+  el.dataset.msg = message;
   el.className = 'toast' + (error ? ' error' : '');
   el.innerHTML = `<span>${esc(message)}</span>`;
   if (action) {
@@ -75,6 +77,7 @@ function route() {
     if (active) t.setAttribute('aria-current', 'page'); else t.removeAttribute('aria-current');
   });
   if (target === 'detail') renderDetail(decodeURIComponent(arg || ''));
+  if (target === 'home') renderHome();
   if (target === 'compare') renderCompare();
   window.scrollTo({ top: 0 });
 }
@@ -115,6 +118,11 @@ function renderGuide() {
 // ---------- Form ----------
 let editingId = null;
 let dirty = false;
+let justSaved = null;
+const STEP_LABELS = ['About', 'Ego', 'Needs', 'Emotions', 'Orientation', 'Unity', 'Mind', 'Heart', 'Sacral', 'Review'];
+const LAST = STEP_LABELS.length - 1;
+let step = 0;
+const visited = new Set();
 
 const chips = (target, items, { multi = false, labelFn = x => x } = {}) =>
   `<div class="chips" data-chips-for="${target}" data-multi="${multi}">${items.map(v =>
@@ -145,7 +153,8 @@ function buildForm() {
         <label><input type="radio" name="person_type" value="Self"><span>🙋 Myself</span></label>
         <label><input type="radio" name="person_type" value="Partner"><span>💞 My partner</span></label>
       </div>
-      <div class="error-text" id="err_type" hidden>Choose who you are assessing.</div></div>
+      <div class="error-text" id="err_type" hidden>Choose who you are assessing.</div>
+      <p class="perspective-hint" id="perspectiveHint" hidden></p></div>
   </div>
 
   <div class="form-section">
@@ -202,18 +211,29 @@ function buildForm() {
       ${help('How we bond', list(ATTACHMENTS.map(([n, d]) => `<strong>${n}:</strong> ${esc(d)}`)))}</div>
   </div>
 
-  ${SECTIONS.map(s => `<div class="form-section"><h3>${s.icon} ${esc(s.title)}</h3>${s.metrics.map(sliderHtml).join('')}</div>`).join('')}
+  ${SECTIONS.map(s => `<div class="form-section"><h3>${s.icon} ${esc(s.title)}</h3><p class="section-sub" data-sub></p>${s.metrics.map(sliderHtml).join('')}</div>`).join('')}
 
-  <div class="form-section" style="border-bottom:none">
-    <h3>🗒️ Notes</h3>
-    <div class="form-group"><label for="f_notes">Anything else worth remembering <span class="hint">(optional)</span></label>
-      <textarea id="f_notes" name="notes" placeholder="Context, dates, things to revisit…"></textarea></div>
+  <div class="form-section">
+    <h3>📋 Review &amp; save</h3>
+    <p class="section-sub">Tap any row to go back and change it. Everything except the name and type is optional.</p>
+    <div id="reviewSummary"></div>
+    <div class="form-group"><label for="f_notes">Notes <span class="hint">(optional: context, dates, things to revisit)</span></label>
+      <textarea id="f_notes" name="notes" placeholder="Anything else worth remembering…"></textarea></div>
   </div>
 
   <div class="form-actions">
-    <button type="submit" class="btn btn-primary" id="submitBtn">Save assessment</button>
-    <button type="button" class="btn btn-secondary" id="resetBtn">Clear form</button>
+    <button type="button" class="btn btn-secondary" id="backBtn">← Back</button>
+    <button type="button" class="link-btn subtle" id="resetBtn">Clear</button>
+    <button type="button" class="btn btn-ghost" id="saveNowBtn">Save now</button>
+    <button type="submit" class="btn btn-primary" id="nextBtn">Next →</button>
   </div>`;
+
+  form.insertAdjacentHTML('afterbegin', `<ol class="stepper" id="stepper" aria-label="Assessment steps">${STEP_LABELS.map((l, i) =>
+    `<li><button type="button" data-goto="${i}"><span class="num">${i + 1}</span><span class="lbl">${l}</span></button></li>`).join('')}</ol>`);
+  $$('.form-section', form).forEach((sec, i) => { sec.dataset.step = i; $('h3', sec).tabIndex = -1; });
+  form.addEventListener('click', e => { const g = e.target.closest('[data-goto]'); if (g) showStep(+g.dataset.goto); });
+  $('#backBtn').addEventListener('click', () => showStep(step - 1));
+  $('#saveNowBtn').addEventListener('click', save);
 
   // Sliders
   ALL_METRICS.forEach(m => {
@@ -247,10 +267,15 @@ function buildForm() {
     if (e.target.name === 'main_ego') renderArchCard();
     if (e.target.name === 'partner_name' && e.target.value.trim()) { e.target.classList.remove('invalid'); $('#err_name').hidden = true; }
     if (e.target.name === 'person_type') { $('#typeGroup').classList.remove('invalid'); $('#err_type').hidden = true; }
+    if (e.target.name === 'partner_name' || e.target.name === 'person_type') {
+      updatePerspective();
+      $('#saveNowBtn').hidden = step === LAST || !validateBasics(false);
+    }
     updateProgress();
+    saveDraft();
   });
   form.addEventListener('change', updateProgress);
-  form.addEventListener('submit', onSubmit);
+  form.addEventListener('submit', e => { e.preventDefault(); if (step < LAST) showStep(step + 1); else save(); });
   $('#resetBtn').addEventListener('click', () => {
     if (dirty && !confirm('Clear everything you have entered in this form?')) return;
     resetForm();
@@ -284,12 +309,168 @@ function renderArchCard() {
     <p><strong>Shadow:</strong> ${esc(a.shadow)}</p><p><strong>Growth edge:</strong> ${esc(a.growth)}</p></div>` : '';
 }
 
-const PROGRESS_FIELDS = TEXT_FIELDS.filter(f => f !== 'notes');
-function updateProgress() {
+function updateProgress() { if ($('#stepper')) renderStepper(); }
+
+// ---------- Wizard ----------
+function validateBasics(show = true) {
+  const name = $('#f_partner_name').value.trim();
+  const type = ($('input[name=person_type]:checked') || {}).value;
+  if (show) {
+    $('#f_partner_name').classList.toggle('invalid', !name); $('#err_name').hidden = !!name;
+    $('#typeGroup').classList.toggle('invalid', !type); $('#err_type').hidden = !!type;
+  }
+  return !!(name && type);
+}
+
+function stepStatus(i) {
+  const sec = $(`#assessmentForm .form-section[data-step="${i}"]`);
+  if (i === LAST || $('input[type=range]', sec)) return visited.has(i) && i !== step ? 'done' : '';
+  const names = [...new Set($$('[name]', sec).map(e => e.name))];
   const d = getFormData();
-  const done = PROGRESS_FIELDS.filter(f => (d[f] || '').trim()).length;
-  $('#progressFill').style.width = (done / PROGRESS_FIELDS.length * 100) + '%';
-  $('#progressText').textContent = `${done} of ${PROGRESS_FIELDS.length} written fields filled · ratings default to 5`;
+  const filled = names.filter(n => String(d[n] || '').trim()).length;
+  return filled === names.length ? 'done' : filled ? 'partial' : '';
+}
+
+function renderStepper() {
+  $$('#stepper button').forEach((b, i) => {
+    const st = stepStatus(i);
+    b.dataset.status = st;
+    b.classList.toggle('current', i === step);
+    if (i === step) b.setAttribute('aria-current', 'step'); else b.removeAttribute('aria-current');
+    $('.num', b).textContent = st === 'done' && i !== step ? '✓' : i + 1;
+    b.setAttribute('aria-label', `Step ${i + 1}: ${STEP_LABELS[i]}${st === 'done' ? ' (done)' : ''}`);
+  });
+  $('#progressText').textContent = `Step ${step + 1} of ${STEP_LABELS.length} · ${STEP_LABELS[step]}` +
+    (dirty ? ' · draft saved on this device' : '');
+}
+
+function showStep(i, { focus = true } = {}) {
+  i = Math.max(0, Math.min(LAST, i));
+  if (i > 0 && !validateBasics()) {
+    i = 0;
+    toast('Add a name and choose who you are assessing to continue.', { error: true });
+    focus = true;
+  }
+  step = i;
+  visited.add(i);
+  $$('#assessmentForm .form-section').forEach(sec => { sec.hidden = +sec.dataset.step !== step; });
+  $('#backBtn').hidden = step === 0;
+  $('#saveNowBtn').hidden = step === LAST || !validateBasics(false);
+  $('#nextBtn').textContent = step === LAST ? (editingId ? 'Update assessment ✓' : 'Save assessment ✓') : `Next: ${STEP_LABELS[step + 1]} →`;
+  if (step === LAST) renderReview();
+  renderStepper();
+  const cur = $(`#stepper [data-goto="${step}"]`);
+  if (cur) { const ol = $('#stepper'); ol.scrollLeft = cur.offsetLeft - ol.clientWidth / 2 + cur.clientWidth / 2; }
+  saveDraft();
+  if (focus) {
+    $('#assess').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (step === 0 && !$('#f_partner_name').value) $('#f_partner_name').focus({ preventScroll: true });
+    else $(`#assessmentForm .form-section[data-step="${step}"] h3`).focus({ preventScroll: true });
+  }
+}
+
+function renderReview() {
+  const d = getFormData();
+  const avg = sec => (sec.metrics.reduce((t, [f]) => t + d[f], 0) / sec.metrics.length).toFixed(1);
+  const rows = [
+    [d.partner_name ? `${d.partner_name} · ${d.person_type || 'type not set'}` : 'Name not set'],
+    [[d.main_ego, d.reactors && `${d.reactors.split(',').filter(x => x.trim()).length} reactor(s)`].filter(Boolean).join(' · ')],
+    [[d.core_need, d.exiled_parts && 'exiled parts', d.core_unhealed && 'core wound'].filter(Boolean).join(' · ')],
+    [[d.predominant_emotion, d.breakup_reason && 'breakup reason', d.trauma_regret && 'trauma/regret'].filter(Boolean).join(' · ')],
+    [[d.dominant_centre, d.attachment_pattern].filter(Boolean).join(' · ')],
+    ...SECTIONS.map(sec => [`average ${avg(sec)} / 10 · ${sec.metrics.map(([f, , short]) => `${short} ${d[f]}`).join(', ')}`]),
+  ];
+  $('#reviewSummary').innerHTML = `<div class="review-list">${rows.map(([text], i) => {
+    const st = stepStatus(i);
+    return `<button type="button" class="review-item" data-goto="${i}">
+      <span class="dot ${st || 'empty'}" aria-hidden="true">${st === 'done' ? '✓' : st === 'partial' ? '•' : ''}</span>
+      <span class="review-label">${STEP_LABELS[i]}</span>
+      <span class="review-text ${text ? '' : 'muted'}">${esc(text || 'Not filled in (optional)')}</span>
+      <span class="review-edit" aria-hidden="true">Edit</span></button>`;
+  }).join('')}</div>`;
+}
+
+function updatePerspective() {
+  const name = $('#f_partner_name').value.trim();
+  const type = ($('input[name=person_type]:checked') || {}).value;
+  const hint = $('#perspectiveHint');
+  hint.hidden = !type;
+  if (type === 'Self') hint.textContent = '🙋 Answer about yourself. For the ratings, score yourself as you show up in this relationship.';
+  if (type === 'Partner') hint.textContent = `💞 Answer about ${name || 'your partner'} as you experience them. For the ratings, score how they show up in the relationship.`;
+  const sub = type === 'Self' ? `Rating ${name ? name + ' (you)' : 'yourself'}. Move the slider; the description updates as you go.`
+    : type === 'Partner' ? `Rating ${name || 'your partner'}. Move the slider; the description updates as you go.` : '';
+  $$('[data-sub]').forEach(el => { el.textContent = sub; });
+  $('#assessTitle').textContent = name ? `${editingId ? 'Editing' : 'Assessing'}: ${name}` : 'Relationship Assessment';
+}
+
+// ---------- Drafts ----------
+const DRAFT = 'rpm.draft.v1';
+let draftTimer;
+function readDraft() { try { const d = JSON.parse(localStorage.getItem(DRAFT) || 'null'); return d && d.data ? d : null; } catch { return null; } }
+function saveDraft() {
+  clearTimeout(draftTimer);
+  draftTimer = setTimeout(() => {
+    if (!dirty) return;
+    try { localStorage.setItem(DRAFT, JSON.stringify({ data: getFormData(), editingId, step, at: Date.now() })); } catch {}
+    renderStepper();
+  }, 400);
+}
+function clearDraft() { clearTimeout(draftTimer); try { localStorage.removeItem(DRAFT); } catch {} }
+function restoreDraft(d) {
+  if (!d) return;
+  setFormData(d.data);
+  setEditing(d.editingId && byId(d.editingId) ? d.editingId : null);
+  dirty = true;
+  for (let i = 0; i <= (d.step || 0); i++) visited.add(i);
+  updatePerspective();
+  showStep(validateBasics(false) ? d.step || 0 : 0, { focus: false });
+  if (location.hash.startsWith('#assess')) {
+    toast(`Picked up where you left off${d.data.partner_name ? ' with ' + d.data.partner_name : ''}.`,
+      { action: () => resetForm(), actionLabel: 'Start over', timeout: 7000 });
+  }
+}
+
+// ---------- Guidance ----------
+function nextStepCard(r) {
+  const other = r.person_type === 'Self' ? 'Partner' : 'Self';
+  const counterpart = records.find(x => x.person_type === other);
+  const fresh = justSaved === r.id; justSaved = null;
+  const lead = fresh ? '<span class="next-badge">Saved ✓</span>' : '';
+  if (!counterpart) {
+    return `<div class="next-card">${lead}<div><strong>Next step:</strong> ${other === 'Partner' ? 'assess your partner' : 'assess yourself'} so you can see how you compare.</div>
+      <button class="btn btn-primary btn-small" data-act="new" data-type="${other}">${other === 'Partner' ? 'Assess partner' : 'Assess yourself'} →</button></div>`;
+  }
+  return `<div class="next-card">${lead}<div><strong>Ready to compare:</strong> ${esc(r.partner_name)} with ${esc(counterpart.partner_name)}${records.filter(x => x.person_type === other).length > 1 ? ' (you can switch people on the next screen)' : ''}.</div>
+    <button class="btn btn-primary btn-small" data-act="compare" data-id="${esc(r.id)}">See compatibility →</button></div>`;
+}
+
+function sortRecords(list, how) {
+  const l = [...list];
+  if (how === 'name') return l.sort((a, b) => (a.partner_name || '').localeCompare(b.partner_name || ''));
+  if (how === 'type') return l.sort((a, b) => (a.person_type === b.person_type ? 0 : a.person_type === 'Self' ? -1 : 1) || (b.updated_at || '').localeCompare(a.updated_at || ''));
+  return l.sort((a, b) => (b.updated_at || '').localeCompare(a.updated_at || ''));
+}
+
+function renderHome() {
+  const box = $('#homeDash'); if (!box) return;
+  const draft = readDraft();
+  const returning = records.length || draft;
+  $('#home').classList.toggle('returning', !!returning);
+  if (!returning) { box.innerHTML = ''; return; }
+  const p = prefs(); const a = byId(p.a), b = byId(p.b);
+  const recent = sortRecords(records, 'updated').slice(0, 4);
+  box.innerHTML = `<div class="dash">
+    ${draft ? `<a class="dash-card accent" href="#assess"><span class="dash-icon">✍️</span><span><strong>Continue your draft</strong>
+      <span class="dash-sub">${esc(draft.data.partner_name || 'Unnamed')} · step ${(draft.step || 0) + 1} of ${STEP_LABELS.length}</span></span></a>` : ''}
+    ${a && b ? `<a class="dash-card" href="#compare"><span class="dash-icon">📊</span><span><strong>${esc(a.partner_name)} &amp; ${esc(b.partner_name)}</strong>
+      <span class="dash-sub">Open your latest comparison</span></span></a>` : ''}
+    <button class="dash-card" type="button" data-act="new"><span class="dash-icon">➕</span><span><strong>New assessment</strong>
+      <span class="dash-sub">For yourself or a partner</span></span></button>
+  </div>
+  ${recent.length ? `<h3 class="dash-title">Recent</h3><div class="recent-list">${recent.map(r => `<a class="recent-item" href="#record/${encodeURIComponent(r.id)}">
+    <span class="badge ${r.person_type === 'Self' ? 'self' : 'partner'}">${esc(r.person_type)}</span>
+    <strong>${esc(r.partner_name || 'Unnamed')}</strong><span class="muted small">${esc(r.main_ego || '')}</span>
+    <span class="muted small recent-date">${esc(fmtDate(r.updated_at))}</span></a>`).join('')}</div>` : ''}`;
 }
 
 function getFormData() {
@@ -311,37 +492,52 @@ function setFormData(r) {
   ALL_METRICS.forEach(m => { $('#f_' + m.field).value = clampRating(r[m.field] ?? 5); updateSlider(m); });
   ['main_ego', 'reactors', 'core_need', 'predominant_emotion'].forEach(syncChips);
   renderArchCard();
+  updatePerspective();
   updateProgress();
 }
 
 function resetForm() {
+  clearDraft();
   $('#assessmentForm').reset();
+  dirty = false;
   setFormData({});
-  editingId = null; dirty = false;
-  $('#editBanner').hidden = true;
-  $('#submitBtn').textContent = 'Save assessment';
+  setEditing(null);
+  visited.clear();
   $$('.invalid').forEach(e => e.classList.remove('invalid'));
   $$('.error-text').forEach(e => { e.hidden = true; });
+  showStep(0, { focus: false });
+}
+
+function setEditing(id) {
+  editingId = id;
+  const r = id && byId(id);
+  $('#editBanner').hidden = !r;
+  if (r) $('#editName').textContent = r.partner_name || 'Unnamed';
+  updatePerspective();
 }
 
 function startEdit(id) {
   const r = byId(id); if (!r) return;
+  if (dirty && editingId !== id && !confirm('You have an unsaved assessment in progress. Discard it and edit this one?')) return;
   resetForm();
   setFormData(r);
-  editingId = id; dirty = false;
-  $('#editName').textContent = r.partner_name || 'Unnamed';
-  $('#editBanner').hidden = false;
-  $('#submitBtn').textContent = 'Update assessment';
+  setEditing(id);
+  STEP_LABELS.forEach((_, i) => visited.add(i));
+  showStep(0, { focus: false });
   go('assess');
 }
 
-function onSubmit(e) {
-  e.preventDefault();
+function startNew(type) {
+  if (dirty && !confirm('You have an unsaved assessment in progress. Discard it and start a new one?')) { go('assess'); return; }
+  resetForm();
+  if (type) { const r = $(`input[name=person_type][value="${type}"]`); if (r) r.checked = true; updatePerspective(); }
+  go('assess');
+  setTimeout(() => $('#f_partner_name').focus(), 50);
+}
+
+function save() {
   const d = getFormData();
-  let firstBad = null;
-  if (!d.partner_name) { $('#f_partner_name').classList.add('invalid'); $('#err_name').hidden = false; firstBad = firstBad || $('#f_partner_name'); }
-  if (!d.person_type) { $('#typeGroup').classList.add('invalid'); $('#err_type').hidden = false; firstBad = firstBad || $('input[name=person_type]'); }
-  if (firstBad) { firstBad.scrollIntoView({ block: 'center' }); firstBad.focus({ preventScroll: true }); toast('Please fill in the required fields.', { error: true }); return; }
+  if (!validateBasics()) { showStep(0); toast('Add a name and who you are assessing first.', { error: true }); return; }
 
   const now = new Date().toISOString();
   let id;
@@ -357,6 +553,7 @@ function onSubmit(e) {
   }
   persist();
   resetForm();
+  justSaved = id;
   go('record/' + encodeURIComponent(id));
 }
 
@@ -364,7 +561,8 @@ function onSubmit(e) {
 function renderRecords() {
   const q = $('#searchInput').value.trim().toLowerCase();
   const t = $('#typeFilter').value;
-  const items = records.filter(r => (!t || r.person_type === t) &&
+  const sort = $('#sortSelect').value;
+  const items = sortRecords(records, sort).filter(r => (!t || r.person_type === t) &&
     (!q || [r.partner_name, r.main_ego, r.attachment_pattern, r.dominant_centre, r.core_need, r.predominant_emotion].join(' ').toLowerCase().includes(q)));
   const box = $('#recordsList');
   if (!records.length) {
@@ -374,7 +572,7 @@ function renderRecords() {
   }
   if (!items.length) { box.innerHTML = '<div class="empty-state"><p>No assessments match your search.</p></div>'; return; }
   box.innerHTML = `<div class="record-grid">${items.map(r => `
-    <article class="record-card">
+    <article class="record-card" data-id="${esc(r.id)}">
       <h3>${esc(r.partner_name || 'Unnamed')} <span class="badge ${r.person_type === 'Self' ? 'self' : 'partner'}">${esc(r.person_type)}</span></h3>
       <dl class="record-meta">
         <dt>Archetype</dt><dd>${esc(r.main_ego || '—')}</dd>
@@ -462,6 +660,7 @@ function renderDetail(id) {
     </div>
     <h2 class="card-title" style="font-size:30px">${esc(r.partner_name || 'Unnamed')} <span class="badge ${r.person_type === 'Self' ? 'self' : 'partner'}">${esc(r.person_type)}</span></h2>
     <p class="muted small">Created ${esc(fmtDate(r.created_at))}${r.updated_at !== r.created_at ? ' · updated ' + esc(fmtDate(r.updated_at)) : ''}</p>
+    ${nextStepCard(r)}
     <div class="form-section"><h3>🎭 Ego, Centre &amp; Attachment</h3><div class="detail-grid">
       ${field('Main ego', r.main_ego)}${field('Attachment', r.attachment_pattern)}${field('Dominant centre', r.dominant_centre)}
       ${field('Predominant emotion', r.predominant_emotion)}${field('Core need', r.core_need)}${field('Reactors', r.reactors)}</div></div>
@@ -558,9 +757,14 @@ function renderCompare() {
       </div>
     </div>
 
-    <div class="comparison-grid">${profile(a, 'self')}${profile(b, 'partner')}</div>
+    <nav class="jump-nav no-print" aria-label="Jump to section">
+      <button data-jump="profiles">Profiles</button><button data-jump="dims">Dimensions</button>
+      <button data-jump="numbers">Strengths &amp; gaps</button>${ins.patterns.length ? '<button data-jump="patterns">Patterns</button>' : ''}
+      ${ins.prompts.length ? '<button data-jump="talk">Talk about it</button>' : ''}</nav>
 
-    <h4 class="section-title">Dimensions</h4>
+    <div class="comparison-grid" id="cmp-profiles">${profile(a, 'self')}${profile(b, 'partner')}</div>
+
+    <h4 class="section-title" id="cmp-dims">Dimensions</h4>
     <div class="legend"><span class="l-self">${na}</span><span class="l-partner">${nb}</span><span class="muted">Right column = difference (red when 3+)</span></div>
     <div class="chart-row">
       <div>${radar(s.rows)}</div>
@@ -574,20 +778,20 @@ function renderCompare() {
       <div class="bars"><div class="bar self"><i style="width:${c.a * 10}%"></i></div><div class="bar partner"><i style="width:${c.b * 10}%"></i></div></div>
       <div class="vals"><span>${na}: <strong>${c.a.toFixed(1)}</strong></span><span>${nb}: <strong>${c.b.toFixed(1)}</strong></span></div></div>`).join('')}</div>
 
-    <h4 class="section-title">What the numbers say</h4>
+    <h4 class="section-title" id="cmp-numbers">What the numbers say</h4>
     <div class="insight-grid">
       <div class="insight green"><h5>💪 Shared strengths <span class="muted small">(both 7+)</span></h5>${li(ins.strengths, r => `<li>${esc(r.label)}: ${r.a} / ${r.b}</li>`)}</div>
       <div class="insight amber"><h5>🌱 Growth areas <span class="muted small">(average ≤ 5.5)</span></h5>${li(ins.growth, r => `<li>${esc(r.label)}: avg ${r.avg.toFixed(1)}</li>`)}</div>
       <div class="insight red"><h5>↔️ Perception gaps <span class="muted small">(3+ points apart)</span></h5>${li(ins.gaps, r => `<li>${esc(r.label)}: ${r.a} vs ${r.b}</li>`)}</div>
     </div>
 
-    ${ins.patterns.length ? `<h4 class="section-title">Pattern insights</h4>${ins.patterns.map(p => `<div class="pattern"><h5>${esc(p.title)}</h5>
+    ${ins.patterns.length ? `<h4 class="section-title" id="cmp-patterns">Pattern insights</h4>${ins.patterns.map(p => `<div class="pattern"><h5>${esc(p.title)}</h5>
       ${p.body ? `<p>${esc(p.body)}</p>` : ''}
       ${p.strength ? `<p><strong>Strength:</strong> ${esc(p.strength)}</p>` : ''}
       ${p.challenge ? `<p><strong>Challenge:</strong> ${esc(p.challenge)}</p>` : ''}
       ${p.rec ? `<p><strong>Try:</strong> ${esc(p.rec)}</p>` : ''}</div>`).join('')}` : ''}
 
-    ${ins.prompts.length ? `<h4 class="section-title">Conversation starters</h4>
+    ${ins.prompts.length ? `<h4 class="section-title" id="cmp-talk">Conversation starters</h4>
       <p class="muted small">Based on your lowest-rated areas and biggest gaps. Take turns answering; listen to understand, not to reply.</p>
       <ol class="prompts">${ins.prompts.map(q => `<li>${esc(q)}</li>`).join('')}</ol>` : ''}
 
@@ -599,6 +803,7 @@ function renderCompare() {
 function refreshAll() {
   $('#recordCount').textContent = records.length || '';
   renderRecords();
+  renderHome();
   const hash = location.hash.slice(1);
   if (hash.startsWith('compare')) renderCompare();
   if (hash.startsWith('record/')) renderDetail(decodeURIComponent(hash.split('/')[1]));
@@ -612,15 +817,29 @@ document.addEventListener('click', e => {
   else if (act === 'delete') { deleteRecord(id); if (location.hash.startsWith('#record/')) go('records'); }
   else if (act === 'print') window.print();
   else if (act === 'sample') addSample();
+  else if (act === 'new') startNew(btn.dataset.type);
+});
+document.addEventListener('click', e => {
+  const j = e.target.closest('[data-jump]');
+  if (j) { const t = $('#cmp-' + j.dataset.jump); if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
 });
 
 function init() {
   load();
   renderGuide();
+  const pendingDraft = readDraft();
   buildForm();
   resetForm();
+  restoreDraft(pendingDraft);
+  if (pendingDraft) saveDraft();
   $('#searchInput').addEventListener('input', renderRecords);
   $('#typeFilter').addEventListener('change', renderRecords);
+  $('#sortSelect').value = prefs().sort || 'updated';
+  $('#sortSelect').addEventListener('change', () => { prefs({ sort: $('#sortSelect').value }); renderRecords(); });
+  $('#recordsList').addEventListener('click', e => {
+    if (e.target.closest('a, button')) return;
+    const card = e.target.closest('.record-card'); if (card) go('record/' + encodeURIComponent(card.dataset.id));
+  });
   $('#sampleBtn').addEventListener('click', addSample);
   $('#homeSampleBtn').addEventListener('click', addSample);
   $('#exportBtn').addEventListener('click', exportData);
@@ -633,7 +852,6 @@ function init() {
   $('#aSelect').addEventListener('change', onPick);
   $('#bSelect').addEventListener('change', onPick);
   $('#swapBtn').addEventListener('click', () => { const a = $('#aSelect').value; $('#aSelect').value = $('#bSelect').value; $('#bSelect').value = a; prefs({ a: $('#aSelect').value, b: $('#bSelect').value }); renderCompare(); });
-  window.addEventListener('beforeunload', e => { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
   window.addEventListener('hashchange', route);
   refreshAll();
   route();

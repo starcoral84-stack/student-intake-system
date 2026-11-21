@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Romantic Partner Matrix</title>
   <meta name="description" content="A private, in-browser relationship assessment: archetypes, attachment, core needs and compatibility charts.">
   <meta name="theme-color" content="#667eea">
@@ -30,10 +30,10 @@
     </header>
 
     <nav class="nav-tabs" aria-label="Sections">
-      <a class="tab-button" href="#home" data-tab="home">Home</a>
-      <a class="tab-button" href="#assess" data-tab="assess">Assessment</a>
-      <a class="tab-button" href="#records" data-tab="records">Saved <span class="count" id="recordCount"></span></a>
-      <a class="tab-button" href="#compare" data-tab="compare">Compare</a>
+      <a class="tab-button" href="#home" data-tab="home"><span class="tab-icon" aria-hidden="true">🏠</span><span>Home</span></a>
+      <a class="tab-button" href="#assess" data-tab="assess"><span class="tab-icon" aria-hidden="true">📝</span><span>Assess</span></a>
+      <a class="tab-button" href="#records" data-tab="records"><span class="tab-icon" aria-hidden="true">🗂️</span><span>Saved</span> <span class="count" id="recordCount"></span></a>
+      <a class="tab-button" href="#compare" data-tab="compare"><span class="tab-icon" aria-hidden="true">📊</span><span>Compare</span></a>
     </nav>
 
     <main id="main">
@@ -42,6 +42,7 @@
           <h2>Understand Your Relationships Deeply</h2>
           <p>Map archetypes, attachment, core needs and chemistry for yourself and a partner, then see where you meet and where you miss each other.</p>
         </div>
+        <div id="homeDash"></div>
         <div class="svg-container" aria-hidden="true">
           <svg class="mandala" viewBox="0 0 500 500">
             <defs>
@@ -81,7 +82,7 @@
           </svg>
         </div>
         <div class="home-actions">
-          <a class="btn btn-primary" href="#assess">Start an assessment</a>
+          <button class="btn btn-primary" type="button" data-act="new">Start an assessment</button>
           <button class="btn btn-secondary" id="homeSampleBtn" type="button">Try with a sample couple</button>
         </div>
         <div class="home-features">
@@ -97,9 +98,7 @@
           <span>Editing <strong id="editName"></strong></span>
           <button type="button" class="btn btn-small btn-secondary" id="cancelEditBtn">Cancel edit</button>
         </div>
-        <h2 class="card-title">Relationship Assessment</h2>
-        <p class="muted">Complete this for yourself or for your partner. Only the name and type are required; you can fill in the rest over time.</p>
-        <div class="progress" aria-hidden="true"><div class="progress-fill" id="progressFill"></div></div>
+        <h2 class="card-title" id="assessTitle">Relationship Assessment</h2>
         <p class="muted small" id="progressText"></p>
         <form id="assessmentForm" novalidate></form>
       </section>
@@ -116,6 +115,7 @@
         <div class="filters">
           <input type="search" id="searchInput" placeholder="Search by name, archetype, attachment…" aria-label="Search assessments">
           <select id="typeFilter" aria-label="Filter by type"><option value="">All types</option><option>Self</option><option>Partner</option></select>
+          <select id="sortSelect" aria-label="Sort"><option value="updated">Recently updated</option><option value="name">Name A–Z</option><option value="type">Self first</option></select>
         </div>
         <div id="recordsList"></div>
         <p class="muted small privacy">🔒 Saved only in this browser on this device. Clearing browser data removes it, so export a backup if it matters to you.
