@@ -1,5 +1,5 @@
 // Compatibility scoring and pattern interpretation. Pure functions, no DOM.
-import { CHART_METRICS, SECTIONS } from './data.js';
+import { CHART_METRICS, SECTIONS, FLIPS } from './data.js';
 
 const num = v => (Number.isFinite(+v) && v !== '' && v !== null ? +v : 0);
 
@@ -209,6 +209,13 @@ export function interpret(a, b, score) {
   const arch = archetypeInsight(a, b);
   if (arch) patterns.push({ title: `Archetypes: ${a.main_ego} + ${b.main_ego}`, body: arch });
   reactorInsights(a, b, na, nb).forEach(t => patterns.push({ title: 'Under stress', body: t }));
+  const fa = FLIPS[a.main_ego], fb = FLIPS[b.main_ego];
+  if (fa || fb) {
+    const line = (n, f) => `${n}'s ${f[0]} is likely part of what draws people in; on a hard day the same trait can feel like ${f[1]}.`;
+    patterns.push({ title: 'Strengths that become weaknesses',
+      body: [fa && line(na, fa), fb && line(nb, fb)].filter(Boolean).join(' ') +
+        ' Before criticising, try naming the strength behind the annoyance.' });
+  }
 
   const promptFields = [...new Set([...growth.map(r => r.field), ...gaps.map(r => r.field)])].slice(0, 5);
   const prompts = (promptFields.length ? promptFields : score.rows.slice().sort((x, y) => x.avg - y.avg).slice(0, 3).map(r => r.field))

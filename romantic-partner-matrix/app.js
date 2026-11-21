@@ -3,6 +3,7 @@ import {
   SECTIONS, ALL_METRICS, CHART_METRICS, TEXT_FIELDS, SAMPLE_PAIR,
 } from './data.js';
 import { scorePair, interpret } from './analysis.js';
+import { LEARN } from './learn.js';
 
 // ---------- Utilities ----------
 const $ = (sel, root = document) => root.querySelector(sel);
@@ -64,7 +65,7 @@ function sanitize(raw) {
 }
 
 // ---------- Router ----------
-const SECTIONS_IDS = ['home', 'assess', 'records', 'detail', 'compare'];
+const SECTIONS_IDS = ['home', 'assess', 'records', 'detail', 'compare', 'learn'];
 function route() {
   const hash = location.hash.slice(1) || 'home';
   const [name, arg] = hash.split('/');
@@ -78,6 +79,11 @@ function route() {
   });
   if (target === 'detail') renderDetail(decodeURIComponent(arg || ''));
   if (target === 'home') renderHome();
+  if (target === 'learn') {
+    $$('#learnToc a').forEach(a => a.classList.toggle('active', a.dataset.topic === arg));
+    const el = arg && $('#learn-' + arg);
+    if (el) { requestAnimationFrame(() => el.scrollIntoView({ block: 'start', behavior: 'instant' })); return; }
+  }
   if (target === 'compare') renderCompare();
   window.scrollTo({ top: 0 });
 }
@@ -103,7 +109,9 @@ function renderGuide() {
     <h3>📊 Rating Scales</h3>
     <p>All scales run 1–10. Higher means a stronger presence of the quality. The description under each slider updates as you move it.</p>
     <h3>🔒 Your data</h3>
-    <p>Assessments are stored only in this browser. Use <em>Export backup</em> on the Saved tab to keep a copy or move to another device.</p>`;
+    <p>Assessments are stored only in this browser. Use <em>Export backup</em> on the Saved tab to keep a copy or move to another device.</p>
+    <h3>📖 Go deeper</h3>
+    <p>The <a href="#learn">Learn</a> page explains the theory behind every section: No Bad Parts, saboteurs, archetypes, attachment, wounds, needs, and more.</p>`;
   const sb = $('#sidebar'), ov = $('#sidebarOverlay'), btn = $('#hamburgerBtn');
   const open = o => {
     sb.classList.toggle('open', o); ov.hidden = !o; sb.setAttribute('aria-hidden', String(!o)); btn.setAttribute('aria-expanded', String(o));
@@ -145,10 +153,10 @@ function buildForm() {
   form.innerHTML = `
   <div class="form-section">
     <h3>👤 Basic Information</h3>
-    <div class="form-group"><label for="f_partner_name">Name <span class="hint">(required)</span></label>
+    <div class="form-group"><label for="f_partner_name">Name <span class="hint">(needed to save; you can look through the steps first)</span></label>
       <input type="text" id="f_partner_name" name="partner_name" autocomplete="off" maxlength="80" required>
       <div class="error-text" id="err_name" hidden>Please enter a name.</div></div>
-    <div class="form-group" role="radiogroup" aria-labelledby="typeLabel"><span class="label" id="typeLabel">I am assessing <span class="hint">(required)</span></span>
+    <div class="form-group" role="radiogroup" aria-labelledby="typeLabel"><span class="label" id="typeLabel">I am assessing <span class="hint">(needed to save)</span></span>
       <div class="segmented" id="typeGroup">
         <label><input type="radio" name="person_type" value="Self"><span>🙋 Myself</span></label>
         <label><input type="radio" name="person_type" value="Partner"><span>💞 My partner</span></label>
@@ -230,7 +238,12 @@ function buildForm() {
 
   form.insertAdjacentHTML('afterbegin', `<ol class="stepper" id="stepper" aria-label="Assessment steps">${STEP_LABELS.map((l, i) =>
     `<li><button type="button" data-goto="${i}"><span class="num">${i + 1}</span><span class="lbl">${l}</span></button></li>`).join('')}</ol>`);
-  $$('.form-section', form).forEach((sec, i) => { sec.dataset.step = i; $('h3', sec).tabIndex = -1; });
+  $$('.form-section', form).forEach((sec, i) => {
+    sec.dataset.step = i; $('h3', sec).tabIndex = -1;
+    const topics = STEP_TOPICS[i] || [];
+    if (topics.length) $('h3', sec).insertAdjacentHTML('afterend', `<div class="learn-links"><span>📖 Learn:</span>${topics.map(t =>
+      `<a href="#learn/${t}">${esc(TOPIC_SHORT[t])}</a>`).join('')}</div>`);
+  });
   form.addEventListener('click', e => { const g = e.target.closest('[data-goto]'); if (g) showStep(+g.dataset.goto); });
   $('#backBtn').addEventListener('click', () => showStep(step - 1));
   $('#saveNowBtn').addEventListener('click', save);
@@ -269,7 +282,6 @@ function buildForm() {
     if (e.target.name === 'person_type') { $('#typeGroup').classList.remove('invalid'); $('#err_type').hidden = true; }
     if (e.target.name === 'partner_name' || e.target.name === 'person_type') {
       updatePerspective();
-      $('#saveNowBtn').hidden = step === LAST || !validateBasics(false);
     }
     updateProgress();
     saveDraft();
@@ -346,16 +358,11 @@ function renderStepper() {
 
 function showStep(i, { focus = true } = {}) {
   i = Math.max(0, Math.min(LAST, i));
-  if (i > 0 && !validateBasics()) {
-    i = 0;
-    toast('Add a name and choose who you are assessing to continue.', { error: true });
-    focus = true;
-  }
   step = i;
   visited.add(i);
   $$('#assessmentForm .form-section').forEach(sec => { sec.hidden = +sec.dataset.step !== step; });
   $('#backBtn').hidden = step === 0;
-  $('#saveNowBtn').hidden = step === LAST || !validateBasics(false);
+  $('#saveNowBtn').hidden = step === LAST;
   $('#nextBtn').textContent = step === LAST ? (editingId ? 'Update assessment ✓' : 'Save assessment ✓') : `Next: ${STEP_LABELS[step + 1]} →`;
   if (step === LAST) renderReview();
   renderStepper();
@@ -380,7 +387,9 @@ function renderReview() {
     [[d.dominant_centre, d.attachment_pattern].filter(Boolean).join(' · ')],
     ...SECTIONS.map(sec => [`average ${avg(sec)} / 10 · ${sec.metrics.map(([f, , short]) => `${short} ${d[f]}`).join(', ')}`]),
   ];
-  $('#reviewSummary').innerHTML = `<div class="review-list">${rows.map(([text], i) => {
+  $('#reviewSummary').innerHTML = (validateBasics(false) ? '' :
+    `<div class="review-warn">To save, add a name and choose who you're assessing. <button type="button" class="link-btn" data-goto="0">Go to About →</button></div>`) +
+    `<div class="review-list">${rows.map(([text], i) => {
     const st = stepStatus(i);
     return `<button type="button" class="review-item" data-goto="${i}">
       <span class="dot ${st || 'empty'}" aria-hidden="true">${st === 'done' ? '✓' : st === 'partial' ? '•' : ''}</span>
@@ -423,7 +432,7 @@ function restoreDraft(d) {
   dirty = true;
   for (let i = 0; i <= (d.step || 0); i++) visited.add(i);
   updatePerspective();
-  showStep(validateBasics(false) ? d.step || 0 : 0, { focus: false });
+  showStep(d.step || 0, { focus: false });
   if (location.hash.startsWith('#assess')) {
     toast(`Picked up where you left off${d.data.partner_name ? ' with ' + d.data.partner_name : ''}.`,
       { action: () => resetForm(), actionLabel: 'Start over', timeout: 7000 });
@@ -799,6 +808,26 @@ function renderCompare() {
     <div class="report-actions"><button class="btn btn-primary" data-act="print">🖨️ Print / save as PDF</button></div>`;
 }
 
+// ---------- Learn ----------
+const TOPIC_SHORT = { overview: 'Overview', ifs: 'No Bad Parts (IFS)', saboteurs: 'Saboteurs', conflict: 'Four Horsemen', archetypes: 'Archetypes',
+  attachment: 'Attachment', wounds: 'Core wounds', needs: 'Needs', centres: 'Centres', eros: 'Eros & safety', debotton: 'Strengths → weaknesses', sources: 'Sources' };
+const STEP_TOPICS = { 1: ['ifs', 'archetypes', 'saboteurs', 'conflict'], 2: ['needs', 'wounds', 'ifs'], 3: ['wounds'], 4: ['attachment', 'centres'],
+  5: ['ifs', 'debotton'], 6: ['conflict'], 7: ['attachment', 'needs'], 8: ['eros'], 9: ['debotton'] };
+
+function renderLearn() {
+  $('#learnToc').innerHTML = LEARN.map(t => `<a href="#learn/${t.id}" data-topic="${t.id}">${t.icon} ${esc(TOPIC_SHORT[t.id] || t.title)}</a>`).join('');
+  $('#learnBody').innerHTML = LEARN.map(t => `
+    <article class="learn-topic" id="learn-${t.id}">
+      <h3><span aria-hidden="true">${t.icon}</span> ${esc(t.title)}</h3>
+      <p class="learn-lead">${esc(t.lead)}</p>
+      <div class="learn-body">${t.body}</div>
+      ${t.app ? `<div class="learn-app"><div><strong>In the app:</strong> ${esc(t.app)}</div>
+        ${t.step !== undefined ? `<button type="button" class="btn btn-small btn-primary" data-act="goto-step" data-step="${t.step}">Go to this step →</button>` : ''}</div>` : ''}
+      ${t.reflect ? `<div class="learn-reflect"><strong>Reflect together</strong><ul>${t.reflect.map(q => `<li>${esc(q)}</li>`).join('')}</ul></div>` : ''}
+      <a class="back-top" href="#learn">↑ Topics</a>
+    </article>`).join('');
+}
+
 // ---------- Global wiring ----------
 function refreshAll() {
   $('#recordCount').textContent = records.length || '';
@@ -818,6 +847,7 @@ document.addEventListener('click', e => {
   else if (act === 'print') window.print();
   else if (act === 'sample') addSample();
   else if (act === 'new') startNew(btn.dataset.type);
+  else if (act === 'goto-step') { go('assess'); showStep(+btn.dataset.step, { focus: false }); }
 });
 document.addEventListener('click', e => {
   const j = e.target.closest('[data-jump]');
@@ -827,6 +857,7 @@ document.addEventListener('click', e => {
 function init() {
   load();
   renderGuide();
+  renderLearn();
   const pendingDraft = readDraft();
   buildForm();
   resetForm();

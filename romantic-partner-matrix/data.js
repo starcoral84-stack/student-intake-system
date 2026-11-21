@@ -259,3 +259,27 @@ export const SAMPLE_PAIR = [
     total_compatibility: 7, higher_self: 5, understanding: 6, compassion: 5, life_alignment: 7, mind_discernment: 8,
     discussion: 6, disagreement: 4, heart_patience: 4, empathy: 5, s_chemistry: 8, eros: 7, comfort: 6 },
 ];
+
+// Alain de Botton / School of Life idea: the qualities that attract us carry their own downside.
+// [what tends to attract, how it can feel on a hard day]
+export const FLIPS = {
+  'The Innocent': ['hopefulness and trust', 'naivety, or not wanting to hear bad news'],
+  'The Orphan/Everyman': ['down-to-earth realism', 'cynicism and expecting to be let down'],
+  'The Hero/Warrior': ['protectiveness and drive', 'combativeness, or never switching off'],
+  'The Caregiver': ['warmth and attentiveness', 'smothering, or quiet resentment'],
+  'The Explorer': ['independence and adventure', 'unavailability, or one foot out the door'],
+  'The Rebel': ['courage to challenge what is wrong', 'opposing things just to oppose them'],
+  'The Lover': ['devotion and passion', 'intensity, jealousy, or losing themselves'],
+  'The Creator': ['vision and originality', 'perfectionism, or disappearing into projects'],
+  'The Jester': ['playfulness and lightness', 'deflecting serious moments with jokes'],
+  'The Sage': ['wisdom and calm reasoning', 'coolness, or analysing instead of feeling'],
+  'The Magician': ['seeing your potential', 'trying to change you'],
+  'The Ruler': ['reliability and leadership', 'control and rigidity'],
+};
+
+export const GENERAL_FLIPS = [
+  ['Spontaneous', 'Unreliable'], ['Dependable', 'Rigid'], ['Passionate', 'Volatile'], ['Calm', 'Detached'],
+  ['Ambitious', 'Absent'], ['Generous', 'Self-neglecting'], ['Precise', 'Critical'], ['Free-spirited', 'Uncommitted'],
+  ['Protective', 'Controlling'], ['Playful', 'Unserious'], ['Sensitive', 'Easily hurt'], ['Confident', 'Domineering'],
+  ['Easy-going', 'Passive'], ['Principled', 'Judgemental'],
+];

@@ -34,6 +34,7 @@
       <a class="tab-button" href="#assess" data-tab="assess"><span class="tab-icon" aria-hidden="true">📝</span><span>Assess</span></a>
       <a class="tab-button" href="#records" data-tab="records"><span class="tab-icon" aria-hidden="true">🗂️</span><span>Saved</span> <span class="count" id="recordCount"></span></a>
       <a class="tab-button" href="#compare" data-tab="compare"><span class="tab-icon" aria-hidden="true">📊</span><span>Compare</span></a>
+      <a class="tab-button" href="#learn" data-tab="learn"><span class="tab-icon" aria-hidden="true">📖</span><span>Learn</span></a>
     </nav>
 
     <main id="main">
@@ -90,6 +91,7 @@
           <div class="feature-card"><div class="feature-icon">🔒</div><h3>Private by Design</h3><p>Everything stays in this browser. Nothing is uploaded. Export a backup file any time.</p></div>
           <div class="feature-card"><div class="feature-icon">📊</div><h3>Visual Comparison</h3><p>Radar chart, side-by-side bars, category scores and a single compatibility index.</p></div>
           <div class="feature-card"><div class="feature-icon">🎯</div><h3>Actionable Insights</h3><p>Attachment dynamics, stress cycles, need tensions, and conversation starters for you both.</p></div>
+          <a class="feature-card link" href="#learn"><div class="feature-icon">📖</div><h3>Learn the Theory</h3><p>No Bad Parts, saboteurs, archetypes, attachment, wounds, needs, and de Botton on love.</p></a>
         </div>
       </section>
 
@@ -123,6 +125,13 @@
       </section>
 
       <section class="content-card" id="detail" hidden></section>
+
+      <section class="content-card" id="learn" hidden>
+        <h2 class="card-title">The ideas behind the matrix</h2>
+        <p class="muted">Plain-language guides to each part of the assessment, where each idea comes from, and questions to reflect on together.</p>
+        <nav class="learn-toc" id="learnToc" aria-label="Topics"></nav>
+        <div id="learnBody"></div>
+      </section>
 
       <section class="content-card" id="compare" hidden>
         <h2 class="card-title">Compatibility Analysis</h2>
