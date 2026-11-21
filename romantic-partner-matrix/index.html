@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Romantic Partner Matrix</title>
+  <meta name="description" content="A private, in-browser relationship assessment: archetypes, attachment, core needs and compatibility charts.">
+  <meta name="theme-color" content="#667eea">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%92%9E%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css">
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <div class="sidebar-overlay" id="sidebarOverlay" hidden></div>
+  <aside class="sidebar" id="sidebar" aria-label="Quick guide" aria-hidden="true">
+    <div class="sidebar-header">
+      <h2 class="sidebar-title">Quick Guide</h2>
+      <button class="icon-btn" id="closeSidebar" aria-label="Close guide">×</button>
+    </div>
+    <div id="guideContent"></div>
+  </aside>
+
+  <div class="main-content">
+    <header class="header">
+      <button class="hamburger" id="hamburgerBtn" aria-label="Open quick guide" aria-controls="sidebar" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+      <h1 class="app-title">Romantic Partner Matrix</h1>
+    </header>
+
+    <nav class="nav-tabs" aria-label="Sections">
+      <a class="tab-button" href="#home" data-tab="home">Home</a>
+      <a class="tab-button" href="#assess" data-tab="assess">Assessment</a>
+      <a class="tab-button" href="#records" data-tab="records">Saved <span class="count" id="recordCount"></span></a>
+      <a class="tab-button" href="#compare" data-tab="compare">Compare</a>
+    </nav>
+
+    <main id="main">
+      <section class="content-card" id="home" hidden>
+        <div class="home-hero">
+          <h2>Understand Your Relationships Deeply</h2>
+          <p>Map archetypes, attachment, core needs and chemistry for yourself and a partner, then see where you meet and where you miss each other.</p>
+        </div>
+        <div class="svg-container" aria-hidden="true">
+          <svg class="mandala" viewBox="0 0 500 500">
+            <defs>
+              <linearGradient id="gradGold" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#FFD700"/><stop offset="100%" stop-color="#FFA500"/></linearGradient>
+              <linearGradient id="gradPurple" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#9D4EDD"/><stop offset="100%" stop-color="#7209B7"/></linearGradient>
+              <linearGradient id="gradCyan" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#00C8E0"/><stop offset="100%" stop-color="#0077B6"/></linearGradient>
+              <linearGradient id="gradRose" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#FF006E"/><stop offset="100%" stop-color="#D90368"/></linearGradient>
+              <radialGradient id="centerGlow"><stop offset="0%" stop-color="#FFFFFF"/><stop offset="50%" stop-color="#FFD700" stop-opacity="0.6"/><stop offset="100%" stop-color="#9D4EDD" stop-opacity="0"/></radialGradient>
+            </defs>
+            <g class="spin-slow"><circle cx="250" cy="250" r="200" fill="none" stroke="url(#gradGold)" stroke-width="2" opacity="0.5" stroke-dasharray="4 8"/></g>
+            <polygon class="pulse" points="250,50 390,130 390,290 250,370 110,290 110,130" fill="none" stroke="url(#gradPurple)" stroke-width="2" opacity="0.45" transform="translate(0 40)"/>
+            <polygon class="pulse d1" points="250,110 340,165 340,275 250,330 160,275 160,165" fill="none" stroke="url(#gradCyan)" stroke-width="2" opacity="0.55" transform="translate(0 30)"/>
+            <g opacity="0.6" transform="translate(0 40)">
+              <polygon class="pulse" points="250,100 310,210 190,210" fill="none" stroke="url(#gradGold)" stroke-width="2"/>
+              <polygon class="pulse d2" points="250,320 190,210 310,210" fill="none" stroke="url(#gradGold)" stroke-width="2"/>
+            </g>
+            <g opacity="0.3" fill="none" stroke="url(#gradPurple)" stroke-width="1.5">
+              <circle cx="250" cy="250" r="50"/><circle cx="250" cy="200" r="50"/><circle cx="250" cy="300" r="50"/>
+              <circle cx="293" cy="225" r="50"/><circle cx="293" cy="275" r="50"/><circle cx="207" cy="225" r="50"/><circle cx="207" cy="275" r="50"/>
+            </g>
+            <circle class="breathe" cx="250" cy="250" r="80" fill="none" stroke="url(#gradCyan)" stroke-width="2" opacity="0.6"/>
+            <circle class="breathe d1" cx="250" cy="250" r="60" fill="none" stroke="url(#gradPurple)" stroke-width="2" opacity="0.7"/>
+            <circle class="breathe d2" cx="250" cy="250" r="40" fill="none" stroke="url(#gradGold)" stroke-width="2" opacity="0.8"/>
+            <circle class="breathe" cx="250" cy="250" r="25" fill="url(#centerGlow)"/>
+            <line x1="250" y1="170" x2="250" y2="330" stroke="url(#gradGold)" opacity="0.4"/>
+            <line x1="170" y1="250" x2="330" y2="250" stroke="url(#gradGold)" opacity="0.4"/>
+            <g font-family="inherit" font-size="13" font-weight="700" fill="#4b5563" text-anchor="middle">
+              <circle cx="250" cy="150" r="20" fill="url(#gradCyan)"/><circle cx="250" cy="150" r="8" fill="#fff"/><text x="250" y="118">MIND</text>
+              <circle cx="350" cy="250" r="20" fill="url(#gradRose)"/><circle cx="350" cy="250" r="8" fill="#fff"/><text x="350" y="290">HEART</text>
+              <circle cx="250" cy="350" r="20" fill="url(#gradPurple)"/><circle cx="250" cy="350" r="8" fill="#fff"/><text x="250" y="392">BODY</text>
+              <circle cx="150" cy="250" r="20" fill="url(#gradGold)"/><circle cx="150" cy="250" r="8" fill="#fff"/><text x="150" y="290">SACRAL</text>
+            </g>
+            <g class="spin-fast">
+              <circle cx="250" cy="70" r="4" fill="#FFD700"/><circle cx="430" cy="250" r="4" fill="#9D4EDD"/>
+              <circle cx="250" cy="430" r="4" fill="#00C8E0"/><circle cx="70" cy="250" r="4" fill="#FF006E"/>
+            </g>
+          </svg>
+        </div>
+        <div class="home-actions">
+          <a class="btn btn-primary" href="#assess">Start an assessment</a>
+          <button class="btn btn-secondary" id="homeSampleBtn" type="button">Try with a sample couple</button>
+        </div>
+        <div class="home-features">
+          <div class="feature-card"><div class="feature-icon">📝</div><h3>Deep Assessment</h3><p>Archetypes, protectors, exiled parts, core wounds, attachment and 13 rated dimensions.</p></div>
+          <div class="feature-card"><div class="feature-icon">🔒</div><h3>Private by Design</h3><p>Everything stays in this browser. Nothing is uploaded. Export a backup file any time.</p></div>
+          <div class="feature-card"><div class="feature-icon">📊</div><h3>Visual Comparison</h3><p>Radar chart, side-by-side bars, category scores and a single compatibility index.</p></div>
+          <div class="feature-card"><div class="feature-icon">🎯</div><h3>Actionable Insights</h3><p>Attachment dynamics, stress cycles, need tensions, and conversation starters for you both.</p></div>
+        </div>
+      </section>
+
+      <section class="content-card" id="assess" hidden>
+        <div class="edit-banner" id="editBanner" hidden>
+          <span>Editing <strong id="editName"></strong></span>
+          <button type="button" class="btn btn-small btn-secondary" id="cancelEditBtn">Cancel edit</button>
+        </div>
+        <h2 class="card-title">Relationship Assessment</h2>
+        <p class="muted">Complete this for yourself or for your partner. Only the name and type are required; you can fill in the rest over time.</p>
+        <div class="progress" aria-hidden="true"><div class="progress-fill" id="progressFill"></div></div>
+        <p class="muted small" id="progressText"></p>
+        <form id="assessmentForm" novalidate></form>
+      </section>
+
+      <section class="content-card" id="records" hidden>
+        <div class="toolbar">
+          <h2 class="card-title">Saved Assessments</h2>
+          <div class="toolbar-actions">
+            <button class="btn btn-secondary btn-small" id="sampleBtn" type="button">🎲 Add sample pair</button>
+            <button class="btn btn-secondary btn-small" id="exportBtn" type="button">⬇️ Export backup</button>
+            <label class="btn btn-secondary btn-small file-btn">⬆️ Import<input type="file" id="importInput" accept="application/json,.json"></label>
+          </div>
+        </div>
+        <div class="filters">
+          <input type="search" id="searchInput" placeholder="Search by name, archetype, attachment…" aria-label="Search assessments">
+          <select id="typeFilter" aria-label="Filter by type"><option value="">All types</option><option>Self</option><option>Partner</option></select>
+        </div>
+        <div id="recordsList"></div>
+        <p class="muted small privacy">🔒 Saved only in this browser on this device. Clearing browser data removes it, so export a backup if it matters to you.
+          <button class="link-btn danger" id="clearAllBtn" type="button">Delete all</button></p>
+      </section>
+
+      <section class="content-card" id="detail" hidden></section>
+
+      <section class="content-card" id="compare" hidden>
+        <h2 class="card-title">Compatibility Analysis</h2>
+        <div class="chart-controls no-print">
+          <div class="chart-selectors">
+            <label class="chart-selector">Self<select id="aSelect"></select></label>
+            <button class="icon-btn swap" id="swapBtn" type="button" aria-label="Swap people" title="Swap">⇄</button>
+            <label class="chart-selector">Partner<select id="bSelect"></select></label>
+          </div>
+          <p class="muted small" id="compareHint"></p>
+        </div>
+        <div id="chartDisplay"></div>
+      </section>
+    </main>
+    <footer class="footer no-print">A reflection tool, not a diagnosis. For serious relationship difficulties, consider a qualified couples therapist.</footer>
+  </div>
+  <div class="toast-region" id="toasts" role="status" aria-live="polite"></div>
+</body>
+</html>
