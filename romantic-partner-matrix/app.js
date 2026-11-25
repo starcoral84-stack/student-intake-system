@@ -460,26 +460,79 @@ function sortRecords(list, how) {
   return l.sort((a, b) => (b.updated_at || '').localeCompare(a.updated_at || ''));
 }
 
+const IDEAS = [
+  { text: 'There are no bad parts. Even the parts of you that rage, numb out or criticise are trying to protect you.', from: 'Richard Schwartz, Internal Family Systems', topic: 'ifs' },
+  { text: '“Compatibility is an achievement of love; it must not be its precondition.”', from: 'Alain de Botton', topic: 'debotton' },
+  { text: 'When something about your partner irritates you, ask: what strength is this the cost of?', from: 'After Alain de Botton', topic: 'debotton' },
+  { text: 'Make the cycle the enemy, not each other.', from: 'After Sue Johnson, Emotionally Focused Therapy', topic: 'conflict' },
+  { text: 'Most couple conflicts are never fully solved. The goal is a kind dialogue about them, not victory.', from: 'After John Gottman', topic: 'conflict' },
+  { text: 'Love wants closeness; desire needs a little distance. A good relationship makes room for both.', from: 'After Esther Perel', topic: 'eros' },
+  { text: 'Behind every complaint is an unmet need. Name the need, not the fault.', from: 'After Marshall Rosenberg, Nonviolent Communication', topic: 'needs' },
+  { text: 'Attachment patterns are not a life sentence. Security can be earned.', from: 'Attachment research', topic: 'attachment' },
+  { text: 'Speak for your part, not from it: “a part of me is scared” lands softer than “you always…”.', from: 'After Richard Schwartz', topic: 'ifs' },
+  { text: 'Notice the saboteur, name it, and step into curiosity instead.', from: 'After Shirzad Chamine, Positive Intelligence', topic: 'saboteurs' },
+];
+const TOPIC_TEASERS = {
+  ifs: 'Why every part of you, even the difficult ones, is trying to help.',
+  attachment: 'How childhood bonds shape the way you reach for love.',
+  archetypes: 'The roles you play, their gifts and their shadows.',
+  conflict: 'The four habits that predict breakups, and their antidotes.',
+  eros: 'Why safety and desire pull in opposite directions.',
+  debotton: 'The trait you fell for is the one that drives you mad.',
+};
+const CENTRE_INFO = {
+  Unity: ['✨ Unity: the Higher Self', 'The calm centre that can step back from the drama and see the relationship as a shared project. In the assessment it is the first rating group: Higher Self, Understanding, Compassion and Life Alignment.', 'ifs'],
+};
+let ideaIndex = Math.floor(Date.now() / 86400000) % IDEAS.length;
+
+function renderIdea() {
+  const i = IDEAS[ideaIndex];
+  const t = LEARN.find(x => x.id === i.topic);
+  $('#ideaCard').innerHTML = `<div class="idea-label">💡 An idea to sit with</div>
+    <blockquote>${esc(i.text)}</blockquote>
+    <div class="idea-foot"><span class="muted small">${esc(i.from)}</span>
+      <span class="idea-actions"><a href="#learn/${i.topic}">Read about ${esc(TOPIC_SHORT[i.topic] || t.title)} →</a>
+      <button type="button" class="btn btn-small btn-ghost" id="nextIdea">↻ Another idea</button></span></div>`;
+}
+
+function showCentre(name) {
+  $$('.mandala .node').forEach(n => n.classList.toggle('active', n.dataset.centre === name));
+  $('.mandala').classList.toggle('has-active', !!name);
+  const box = $('#centreCaption');
+  if (!name) {
+    box.innerHTML = '<strong>Four centres, one relationship.</strong> Tap Mind, Heart, Body, Sacral, or the glowing centre, to see how each shapes the way you love.';
+    return;
+  }
+  let title, desc, topic = 'centres';
+  if (CENTRE_INFO[name]) [title, desc, topic] = CENTRE_INFO[name];
+  else {
+    const c = CENTRES.find(x => x[0] === name);
+    const icon = { Mind: '🧠', Heart: '💗', Body: '🦶', Sacral: '🔥' }[name];
+    title = `${icon} ${name}: ${c[1].toLowerCase()}`;
+    desc = c[2];
+  }
+  box.innerHTML = `<strong>${esc(title)}</strong> ${esc(desc)} <a href="#learn/${topic}">Learn more →</a>`;
+}
+
 function renderHome() {
-  const box = $('#homeDash'); if (!box) return;
+  const box = $('#homeActions'); if (!box) return;
   const draft = readDraft();
-  const returning = records.length || draft;
-  $('#home').classList.toggle('returning', !!returning);
-  if (!returning) { box.innerHTML = ''; return; }
-  const p = prefs(); const a = byId(p.a), b = byId(p.b);
-  const recent = sortRecords(records, 'updated').slice(0, 4);
-  box.innerHTML = `<div class="dash">
-    ${draft ? `<a class="dash-card accent" href="#assess"><span class="dash-icon">✍️</span><span><strong>Continue your draft</strong>
-      <span class="dash-sub">${esc(draft.data.partner_name || 'Unnamed')} · step ${(draft.step || 0) + 1} of ${STEP_LABELS.length}</span></span></a>` : ''}
-    ${a && b ? `<a class="dash-card" href="#compare"><span class="dash-icon">📊</span><span><strong>${esc(a.partner_name)} &amp; ${esc(b.partner_name)}</strong>
-      <span class="dash-sub">Open your latest comparison</span></span></a>` : ''}
-    <button class="dash-card" type="button" data-act="new"><span class="dash-icon">➕</span><span><strong>New assessment</strong>
-      <span class="dash-sub">For yourself or a partner</span></span></button>
-  </div>
-  ${recent.length ? `<h3 class="dash-title">Recent</h3><div class="recent-list">${recent.map(r => `<a class="recent-item" href="#record/${encodeURIComponent(r.id)}">
-    <span class="badge ${r.person_type === 'Self' ? 'self' : 'partner'}">${esc(r.person_type)}</span>
-    <strong>${esc(r.partner_name || 'Unnamed')}</strong><span class="muted small">${esc(r.main_ego || '')}</span>
-    <span class="muted small recent-date">${esc(fmtDate(r.updated_at))}</span></a>`).join('')}</div>` : ''}`;
+  const primary = draft
+    ? `<a class="btn btn-primary btn-lg" href="#assess">Continue your assessment →<span class="btn-sub">Step ${(draft.step || 0) + 1} of ${STEP_LABELS.length}, saved on this device</span></a>`
+    : `<button class="btn btn-primary btn-lg" type="button" data-act="new">Start an assessment →</button>`;
+  const secondary = records.length >= 2
+    ? `<a class="btn btn-secondary btn-lg" href="#compare">📊 View comparison</a>`
+    : `<button class="btn btn-secondary btn-lg" type="button" data-act="sample">✨ Try a sample couple</button>`;
+  box.innerHTML = primary + secondary + (draft ? `<button class="link-btn subtle" type="button" data-act="new">or start a new one</button>` : '');
+  if (!$('#topicGrid').childElementCount) {
+    $('#topicGrid').innerHTML = Object.entries(TOPIC_TEASERS).map(([id, teaser]) => {
+      const t = LEARN.find(x => x.id === id);
+      return `<a class="topic-card" href="#learn/${id}"><span class="topic-icon" aria-hidden="true">${t.icon}</span>
+        <strong>${esc(TOPIC_SHORT[id])}</strong><span>${esc(teaser)}</span></a>`;
+    }).join('') + `<a class="topic-card all" href="#learn"><strong>All 12 topics →</strong><span>IFS, saboteurs, wounds, needs, centres and sources.</span></a>`;
+    renderIdea();
+    showCentre(null);
+  }
 }
 
 function getFormData() {
@@ -872,7 +925,15 @@ function init() {
     const card = e.target.closest('.record-card'); if (card) go('record/' + encodeURIComponent(card.dataset.id));
   });
   $('#sampleBtn').addEventListener('click', addSample);
-  $('#homeSampleBtn').addEventListener('click', addSample);
+  $('#home').addEventListener('click', e => {
+    if (e.target.closest('#nextIdea')) { ideaIndex = (ideaIndex + 1) % IDEAS.length; renderIdea(); return; }
+    const n = e.target.closest('.mandala .node');
+    if (n) showCentre(n.classList.contains('active') ? null : n.dataset.centre);
+  });
+  $('#home').addEventListener('keydown', e => {
+    const n = e.target.closest('.mandala .node');
+    if (n && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); showCentre(n.classList.contains('active') ? null : n.dataset.centre); }
+  });
   $('#exportBtn').addEventListener('click', exportData);
   $('#importInput').addEventListener('change', e => { const f = e.target.files[0]; if (f) importData(f); e.target.value = ''; });
   $('#clearAllBtn').addEventListener('click', () => {

@@ -38,14 +38,15 @@
     </nav>
 
     <main id="main">
-      <section class="content-card" id="home" hidden>
+      <section class="content-card home" id="home" hidden>
         <div class="home-hero">
+          <p class="eyebrow">Private reflection for couples</p>
           <h2>Understand Your Relationships Deeply</h2>
           <p>Map archetypes, attachment, core needs and chemistry for yourself and a partner, then see where you meet and where you miss each other.</p>
         </div>
-        <div id="homeDash"></div>
-        <div class="svg-container" aria-hidden="true">
-          <svg class="mandala" viewBox="0 0 500 500">
+
+        <div class="mandala-wrap">
+          <svg class="mandala" viewBox="0 0 500 500" role="group" aria-label="The four centres around Unity. Choose one to learn about it.">
             <defs>
               <linearGradient id="gradGold" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#FFD700"/><stop offset="100%" stop-color="#FFA500"/></linearGradient>
               <linearGradient id="gradPurple" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#9D4EDD"/><stop offset="100%" stop-color="#7209B7"/></linearGradient>
@@ -53,46 +54,68 @@
               <linearGradient id="gradRose" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#FF006E"/><stop offset="100%" stop-color="#D90368"/></linearGradient>
               <radialGradient id="centerGlow"><stop offset="0%" stop-color="#FFFFFF"/><stop offset="50%" stop-color="#FFD700" stop-opacity="0.6"/><stop offset="100%" stop-color="#9D4EDD" stop-opacity="0"/></radialGradient>
             </defs>
-            <g class="spin-slow"><circle cx="250" cy="250" r="200" fill="none" stroke="url(#gradGold)" stroke-width="2" opacity="0.5" stroke-dasharray="4 8"/></g>
-            <polygon class="pulse" points="250,50 390,130 390,290 250,370 110,290 110,130" fill="none" stroke="url(#gradPurple)" stroke-width="2" opacity="0.45" transform="translate(0 40)"/>
-            <polygon class="pulse d1" points="250,110 340,165 340,275 250,330 160,275 160,165" fill="none" stroke="url(#gradCyan)" stroke-width="2" opacity="0.55" transform="translate(0 30)"/>
-            <g opacity="0.6" transform="translate(0 40)">
-              <polygon class="pulse" points="250,100 310,210 190,210" fill="none" stroke="url(#gradGold)" stroke-width="2"/>
-              <polygon class="pulse d2" points="250,320 190,210 310,210" fill="none" stroke="url(#gradGold)" stroke-width="2"/>
+            <g aria-hidden="true">
+              <g class="spin-slow"><circle cx="250" cy="250" r="215" fill="none" stroke="url(#gradGold)" stroke-width="2" opacity="0.5" stroke-dasharray="4 8"/></g>
+              <polygon class="pulse" points="250,50 390,130 390,290 250,370 110,290 110,130" fill="none" stroke="url(#gradPurple)" stroke-width="2" opacity="0.45" transform="translate(0 40)"/>
+              <polygon class="pulse d1" points="250,110 340,165 340,275 250,330 160,275 160,165" fill="none" stroke="url(#gradCyan)" stroke-width="2" opacity="0.55" transform="translate(0 30)"/>
+              <g opacity="0.6" transform="translate(0 40)">
+                <polygon class="pulse" points="250,100 310,210 190,210" fill="none" stroke="url(#gradGold)" stroke-width="2"/>
+                <polygon class="pulse d2" points="250,320 190,210 310,210" fill="none" stroke="url(#gradGold)" stroke-width="2"/>
+              </g>
+              <g opacity="0.3" fill="none" stroke="url(#gradPurple)" stroke-width="1.5">
+                <circle cx="250" cy="250" r="50"/><circle cx="250" cy="200" r="50"/><circle cx="250" cy="300" r="50"/>
+                <circle cx="293" cy="225" r="50"/><circle cx="293" cy="275" r="50"/><circle cx="207" cy="225" r="50"/><circle cx="207" cy="275" r="50"/>
+              </g>
+              <circle class="breathe" cx="250" cy="250" r="80" fill="none" stroke="url(#gradCyan)" stroke-width="2" opacity="0.6"/>
+              <circle class="breathe d1" cx="250" cy="250" r="60" fill="none" stroke="url(#gradPurple)" stroke-width="2" opacity="0.7"/>
+              <circle class="breathe d2" cx="250" cy="250" r="40" fill="none" stroke="url(#gradGold)" stroke-width="2" opacity="0.8"/>
+              <line x1="250" y1="171" x2="250" y2="329" stroke="url(#gradGold)" opacity="0.4"/>
+              <line x1="171" y1="250" x2="329" y2="250" stroke="url(#gradGold)" opacity="0.4"/>
+              <g class="spin-fast">
+                <circle cx="250" cy="55" r="4" fill="#FFD700"/><circle cx="445" cy="250" r="4" fill="#9D4EDD"/>
+                <circle cx="250" cy="445" r="4" fill="#00C8E0"/><circle cx="55" cy="250" r="4" fill="#FF006E"/>
+              </g>
             </g>
-            <g opacity="0.3" fill="none" stroke="url(#gradPurple)" stroke-width="1.5">
-              <circle cx="250" cy="250" r="50"/><circle cx="250" cy="200" r="50"/><circle cx="250" cy="300" r="50"/>
-              <circle cx="293" cy="225" r="50"/><circle cx="293" cy="275" r="50"/><circle cx="207" cy="225" r="50"/><circle cx="207" cy="275" r="50"/>
-            </g>
-            <circle class="breathe" cx="250" cy="250" r="80" fill="none" stroke="url(#gradCyan)" stroke-width="2" opacity="0.6"/>
-            <circle class="breathe d1" cx="250" cy="250" r="60" fill="none" stroke="url(#gradPurple)" stroke-width="2" opacity="0.7"/>
-            <circle class="breathe d2" cx="250" cy="250" r="40" fill="none" stroke="url(#gradGold)" stroke-width="2" opacity="0.8"/>
-            <circle class="breathe" cx="250" cy="250" r="25" fill="url(#centerGlow)"/>
-            <line x1="250" y1="170" x2="250" y2="330" stroke="url(#gradGold)" opacity="0.4"/>
-            <line x1="170" y1="250" x2="330" y2="250" stroke="url(#gradGold)" opacity="0.4"/>
-            <g font-family="inherit" font-size="13" font-weight="700" fill="#4b5563" text-anchor="middle">
-              <circle cx="250" cy="150" r="20" fill="url(#gradCyan)"/><circle cx="250" cy="150" r="8" fill="#fff"/><text x="250" y="118">MIND</text>
-              <circle cx="350" cy="250" r="20" fill="url(#gradRose)"/><circle cx="350" cy="250" r="8" fill="#fff"/><text x="350" y="290">HEART</text>
-              <circle cx="250" cy="350" r="20" fill="url(#gradPurple)"/><circle cx="250" cy="350" r="8" fill="#fff"/><text x="250" y="392">BODY</text>
-              <circle cx="150" cy="250" r="20" fill="url(#gradGold)"/><circle cx="150" cy="250" r="8" fill="#fff"/><text x="150" y="290">SACRAL</text>
-            </g>
-            <g class="spin-fast">
-              <circle cx="250" cy="70" r="4" fill="#FFD700"/><circle cx="430" cy="250" r="4" fill="#9D4EDD"/>
-              <circle cx="250" cy="430" r="4" fill="#00C8E0"/><circle cx="70" cy="250" r="4" fill="#FF006E"/>
+            <g class="nodes" font-family="inherit" font-size="15" font-weight="700" fill="#4b5563" text-anchor="middle">
+              <g class="node" data-centre="Mind" tabindex="0" role="button" aria-label="Mind centre: what it means">
+                <circle class="node-halo" cx="250" cy="150" r="31"/>
+                <circle cx="250" cy="150" r="21" fill="url(#gradCyan)"/><circle cx="250" cy="150" r="8" fill="#fff"/>
+                <text x="250" y="108">MIND</text></g>
+              <g class="node" data-centre="Heart" tabindex="0" role="button" aria-label="Heart centre: what it means">
+                <circle class="node-halo" cx="350" cy="250" r="31"/>
+                <circle cx="350" cy="250" r="21" fill="url(#gradRose)"/><circle cx="350" cy="250" r="8" fill="#fff"/>
+                <text x="350" y="300">HEART</text></g>
+              <g class="node" data-centre="Body" tabindex="0" role="button" aria-label="Body centre: what it means">
+                <circle class="node-halo" cx="250" cy="350" r="31"/>
+                <circle cx="250" cy="350" r="21" fill="url(#gradPurple)"/><circle cx="250" cy="350" r="8" fill="#fff"/>
+                <text x="250" y="402">BODY</text></g>
+              <g class="node" data-centre="Sacral" tabindex="0" role="button" aria-label="Sacral centre: what it means">
+                <circle class="node-halo" cx="150" cy="250" r="31"/>
+                <circle cx="150" cy="250" r="21" fill="url(#gradGold)"/><circle cx="150" cy="250" r="8" fill="#fff"/>
+                <text x="150" y="300">SACRAL</text></g>
+              <g class="node centre-node" data-centre="Unity" tabindex="0" role="button" aria-label="Unity: what it means">
+                <circle class="node-halo" cx="250" cy="250" r="34"/>
+                <circle class="breathe" cx="250" cy="250" r="26" fill="url(#centerGlow)"/>
+              </g>
             </g>
           </svg>
+          <div class="centre-caption" id="centreCaption" aria-live="polite"></div>
         </div>
-        <div class="home-actions">
-          <button class="btn btn-primary" type="button" data-act="new">Start an assessment</button>
-          <button class="btn btn-secondary" id="homeSampleBtn" type="button">Try with a sample couple</button>
-        </div>
-        <div class="home-features">
-          <div class="feature-card"><div class="feature-icon">📝</div><h3>Deep Assessment</h3><p>Archetypes, protectors, exiled parts, core wounds, attachment and 13 rated dimensions.</p></div>
-          <div class="feature-card"><div class="feature-icon">🔒</div><h3>Private by Design</h3><p>Everything stays in this browser. Nothing is uploaded. Export a backup file any time.</p></div>
-          <div class="feature-card"><div class="feature-icon">📊</div><h3>Visual Comparison</h3><p>Radar chart, side-by-side bars, category scores and a single compatibility index.</p></div>
-          <div class="feature-card"><div class="feature-icon">🎯</div><h3>Actionable Insights</h3><p>Attachment dynamics, stress cycles, need tensions, and conversation starters for you both.</p></div>
-          <a class="feature-card link" href="#learn"><div class="feature-icon">📖</div><h3>Learn the Theory</h3><p>No Bad Parts, saboteurs, archetypes, attachment, wounds, needs, and de Botton on love.</p></a>
-        </div>
+
+        <div class="home-actions" id="homeActions"></div>
+        <p class="home-meta"><span>⏱️ 10–15 minutes</span><span>🔒 Stays in your browser</span><span>✋ Skip anything</span></p>
+
+        <h3 class="home-h">How it works</h3>
+        <ol class="how-steps">
+          <li><span class="how-num">1</span><strong>Reflect on yourself</strong><span>Your parts, wounds, needs and attachment style, in ten short steps.</span></li>
+          <li><span class="how-num">2</span><strong>Reflect on your partner</strong><span>The same steps, as you experience them. Or invite them to do their own.</span></li>
+          <li><span class="how-num">3</span><strong>Compare and talk</strong><span>Shared strengths, perception gaps and the patterns between you, with questions to explore together.</span></li>
+        </ol>
+
+        <div class="idea-card" id="ideaCard" aria-live="polite"></div>
+
+        <h3 class="home-h">Explore the ideas</h3>
+        <div class="topic-grid" id="topicGrid"></div>
       </section>
 
       <section class="content-card" id="assess" hidden>

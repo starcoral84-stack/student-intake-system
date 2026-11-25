@@ -368,9 +368,6 @@ input[type=range]:focus-visible { outline: 3px solid #fbbf24; }
 .recent-item { display: flex; gap: 10px; align-items: center; padding: 10px 12px; border-radius: 10px; background: #fafafa; color: var(--ink); text-decoration: none; }
 .recent-item:hover { background: var(--tint); }
 .recent-date { margin-left: auto; white-space: nowrap; }
-#home.returning .home-features, #home.returning .home-actions { display: none; }
-#home.returning .mandala { width: 200px; }
-#home.returning .svg-container { margin: 8px 0 0; }
 
 /* Records */
 .filters { grid-template-columns: 1fr 140px 170px; }
@@ -465,4 +462,64 @@ input[type=range]:focus-visible { outline: 3px solid #fbbf24; }
   .learn-lead { font-size: 16px; }
   .flow li { grid-template-columns: 30px 1fr; }
   .flow li span { grid-column: 2; }
+}
+
+/* ---------- Welcome page v2 ---------- */
+.home .home-hero { margin-bottom: 4px; }
+.home-hero .eyebrow { display: inline-block; background: var(--tint); color: var(--brand); font-weight: 700; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; padding: 5px 12px; border-radius: 99px; margin: 0 0 12px; }
+.mandala-wrap { display: flex; flex-direction: column; align-items: center; margin: 8px 0 20px; }
+.home .mandala { width: min(560px, 100%); height: auto; overflow: visible; }
+.mandala .node { cursor: pointer; outline: none; }
+.mandala .node > circle:not(.node-halo), .mandala .node text { transition: transform .25s ease, opacity .25s; transform-box: fill-box; transform-origin: center; }
+.mandala .node:hover > circle:not(.node-halo), .mandala .node:focus-visible > circle:not(.node-halo) { transform: scale(1.12); }
+.node-halo { fill: none; stroke: var(--brand); stroke-width: 2.5; opacity: 0; transform-box: fill-box; transform-origin: center; animation: halo 2.6s ease-out infinite; }
+.mandala .node:nth-child(2) .node-halo { animation-delay: .65s; } .mandala .node:nth-child(3) .node-halo { animation-delay: 1.3s; }
+.mandala .node:nth-child(4) .node-halo { animation-delay: 1.95s; } .mandala .node:nth-child(5) .node-halo { animation-delay: 2.3s; }
+.mandala.has-active .node-halo { animation: none; opacity: 0; }
+.mandala .node.active .node-halo, .mandala .node:focus-visible .node-halo { animation: none; opacity: 1; stroke: #fbbf24; stroke-width: 3; }
+.mandala .node.active text { fill: var(--brand); }
+@keyframes halo { 0% { opacity: .55; transform: scale(.8); } 70%, 100% { opacity: 0; transform: scale(1.35); } }
+.centre-caption { max-width: 560px; text-align: center; font-size: 15px; color: var(--ink-2); background: var(--tint); border-radius: 12px; padding: 12px 18px; min-height: 3.6em; margin-top: 4px; }
+.centre-caption strong { color: var(--ink); }
+.home-actions { flex-direction: row; align-items: center; }
+.btn-lg { padding: 15px 28px; font-size: 16px; flex-direction: column; gap: 2px; text-align: center; }
+.btn-sub { font-size: 12px; font-weight: 500; opacity: .85; }
+.home-meta { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px 20px; color: var(--muted); font-size: 14px; margin: 0 0 8px; }
+.home-h { text-align: center; font-size: 22px; color: var(--ink); margin: 36px 0 16px; }
+.how-steps { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.how-steps li { background: linear-gradient(135deg, var(--tint), var(--tint-2)); border-radius: 14px; padding: 20px; display: flex; flex-direction: column; gap: 6px; position: relative; }
+.how-steps strong { font-size: 17px; }
+.how-steps li > span:last-child { color: var(--ink-2); font-size: 14px; }
+.how-num { width: 34px; height: 34px; border-radius: 50%; background: var(--brand); color: #fff; font-weight: 800; display: grid; place-items: center; margin-bottom: 4px; }
+.how-steps li:not(:last-child)::after { content: '→'; position: absolute; right: -13px; top: 50%; transform: translateY(-50%); color: var(--brand); font-weight: 700; z-index: 1; }
+.idea-card { margin: 32px auto 0; max-width: 760px; border-radius: 16px; padding: 24px 28px; background: linear-gradient(135deg, #312e81, #6d28d9); color: #fff; box-shadow: 0 10px 30px rgba(76, 29, 149, .25); }
+.idea-label { font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; opacity: .8; }
+.idea-card blockquote { margin: 10px 0 16px; font-size: 21px; line-height: 1.45; font-weight: 600; }
+.idea-foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.idea-card .muted { color: rgba(255,255,255,.75); }
+.idea-actions { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.idea-card a { color: #fde68a; font-weight: 600; font-size: 14px; }
+.idea-card .btn-ghost { color: #fff; border-color: rgba(255,255,255,.35); }
+.idea-card .btn-ghost:hover { background: rgba(255,255,255,.12); }
+.topic-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; }
+.topic-card { display: flex; flex-direction: column; gap: 4px; padding: 16px; border: 2px solid var(--line); border-radius: 14px; text-decoration: none; color: var(--ink); transition: border-color .2s, transform .2s; }
+.topic-card:hover { border-color: var(--brand); transform: translateY(-2px); }
+.topic-card span:last-child { color: var(--muted); font-size: 14px; }
+.topic-icon { font-size: 26px; }
+.topic-card.all { background: var(--tint); border-color: var(--tint-2); justify-content: center; }
+.topic-card.all strong { color: var(--brand); }
+@media (max-width: 760px) {
+  .home .mandala { width: 100%; }
+  .home-actions { flex-direction: column; align-items: stretch; }
+  .how-steps { grid-template-columns: 1fr; }
+  .how-steps li:not(:last-child)::after { content: '↓'; right: auto; left: 50%; top: auto; bottom: -15px; transform: translateX(-50%); }
+  .idea-card { padding: 20px; }
+  .idea-card blockquote { font-size: 18px; }
+  .home-h { font-size: 19px; margin-top: 28px; }
+}
+@media (max-width: 760px) {
+  .home-hero .eyebrow { font-size: 11px; letter-spacing: .03em; padding: 4px 10px; }
+  .home .mandala { width: calc(100% + 32px); margin: 0 -16px; }
+  .mandala .nodes text { font-size: 21px; }
+  .centre-caption { font-size: 14px; }
 }
